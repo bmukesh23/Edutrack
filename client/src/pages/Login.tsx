@@ -7,7 +7,6 @@ import { FaGoogle } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../utils/firebaseConfig';
 
@@ -35,7 +34,7 @@ export function LoginForm() {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             console.log('User logged in:', userCredential.user);
-            navigate("/"); // Redirect after successful login
+            navigate("/");
         } catch (error) {
             console.error('Error logging in:', error);
         }
@@ -63,65 +62,72 @@ export function LoginForm() {
     };
 
     return (
-        <Card className="mx-auto max-w-sm border-none flex_center flex-col h-screen items-stretch">
-            <CardHeader className='text-center'>
-                <CardTitle className="text-2xl font-bold">Login to your account</CardTitle>
-                <CardDescription className="text-slate-500">
-                    Enter your email below to login to your account
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <form onSubmit={handleSubmit(onSubmit)}>
-                    <div className="grid gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                placeholder="mail@example.com"
-                                className=""
-                                {...register('email')}
-                            />
-                            {errors.email && <p className="text-red-500">{errors.email.message}</p>}
-                        </div>
-                        <div className="grid gap-2">
-                            <div className="flex items-center">
-                                <Label htmlFor="password">Password</Label>
-                                <Link to="/forgot-password" className="ml-auto inline-block text-sm underline">
-                                    Forgot your password?
-                                </Link>
+        <Card className="mx-auto border-none flex h-screen">
+            {/* Left section (CardContent) */}
+            <div className="w-1/2 flex p-44 flex-col justify-center">
+                <CardHeader className="text-center">
+                    <CardTitle className="text-2xl font-bold">Login to your account</CardTitle>
+                    <CardDescription className="text-slate-500">
+                        Welcome back! Please enter your details
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <div className="grid gap-4">
+                            <Button
+                                variant="outline"
+                                className="w-full btn-primary bg-blue-700 text-white hover:bg-blue-500 hover:text-white shadow-xl"
+                                onClick={handleGoogleSignIn}
+                            >
+                                <span className="flex_center gap-1 ">
+                                    <FaGoogle className="mt-[2px]" />
+                                    Login with Google
+                                </span>
+                            </Button>
+                            <div className="flex items-center justify-center my-4">
+                                <hr className="flex-grow border-t border-gray-300" />
+                                <span className="px-2 text-gray-600 text-xs">or</span>
+                                <hr className="flex-grow border-t border-gray-300" />
                             </div>
-                            <Input
-                                id="password"
-                                type="password"
-                                placeholder="Password"
-                                className=""
-                                {...register('password')}
-                            />
-                            {errors.password && <p className="text-red-500">{errors.password.message}</p>}
+                            <div className="grid gap-2">
+                                <Input
+                                    type="email"
+                                    placeholder="Email"
+                                    className="shadow-xl outline-none"
+                                    {...register('email')}
+                                />
+                                {errors.email && <p className="text-red-500">{errors.email.message}</p>}
+                            </div>
+                            <div className="grid gap-2">
+                                <Input
+                                    type="password"
+                                    placeholder="Password"
+                                    className="shadow-xl outline-none"
+                                    {...register('password')}
+                                />
+                                <div className="flex items-center">
+                                    <Link to="/forgot-password" className="ml-auto inline-block text-sm font-semibold underline">
+                                        Forgot password
+                                    </Link>
+                                </div>
+                                {errors.password && <p className="text-red-500">{errors.password.message}</p>}
+                            </div>
+                            <Button type="submit" className="w-full btn_primary shadow-xl">
+                                Log In
+                            </Button>
                         </div>
-                        <Button type="submit" className="w-full btn_primary">
-                            Log In
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="w-full btn-primary bg-blue-700 text-white hover:bg-blue-500 hover:text-white"
-                            onClick={handleGoogleSignIn}
-                        >
-                            <span className="flex_center gap-1">
-                                <FaGoogle className="mt-[2px]" />
-                                Login with Google
-                            </span>
-                        </Button>
+                    </form>
+                    <div className="mt-4 text-center text-sm">
+                        Don't have an account?{' '}
+                        <Link to="/signup" className="text-blue-400">
+                            Sign up
+                        </Link>
                     </div>
-                </form>
-                <div className="mt-4 text-center text-sm">
-                    Don't have an account?{' '}
-                    <Link to="/signup" className="text-blue-400">
-                        Sign up
-                    </Link>
-                </div>
-            </CardContent>
+                </CardContent>
+            </div>
+
+            {/* Right section (solid blue background) */}
+            <div className="w-1/2 bg-blue-700"></div>
         </Card>
     );
 }
