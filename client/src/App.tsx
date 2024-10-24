@@ -1,17 +1,27 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Home from "./pages/Home";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
+import Courses from "./pages/Courses";
+import Assignments from "./pages/Assignments";
+import SavedCourses from "./pages/SavedCourses";
+import Messages from "./pages/Messages";
+import PreferenceForm from "./pages/PreferenceForm";
+import Settings from "./pages/Settings";
 
 function App() {
 
   return (
     <Router>
-        <Routes>
-          <Route path='/' element={<Signup />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Routes>
+      <Routes>
+        <Route path='/' element={<Signup />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/mycourses" element={<Courses />} />
+        <Route path="/assignments" element={<Assignments />} />
+        <Route path="/saved_courses" element={<SavedCourses />} />
+        <Route path="/messages" element={<Messages />} />
+        <Route path="/profile_form" element={<PreferenceForm />} />
+        <Route path="/settings" element={<Settings />} />
+      </Routes>
     </Router>
   );
 }

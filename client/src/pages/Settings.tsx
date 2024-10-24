@@ -1,10 +1,10 @@
 import Sidebar from "@/layouts/Sidebar"
 
-const Dashboard = () => {
+const Settings = () => {
     return (
         <>
             <Sidebar />
         </>
     )
 }
-export default Dashboard
+export default Settings
