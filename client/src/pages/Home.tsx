@@ -1,6 +1,15 @@
+import Navbar from "@/layouts/Navbar"
+
 const Home = () => {
   return (
-    <div className="bg-yellow-400 text-center font-semibold h-14 p-4">Home</div>
+    <main>
+      <div className="flex items-center gap-3 justify-evenly">
+        <Navbar />
+        <p>home</p>
+        <p>courses</p>
+        <p>assessments</p>
+      </div>
+    </main>
   )
 }
 export default Home
