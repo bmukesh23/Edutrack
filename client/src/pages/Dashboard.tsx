@@ -84,8 +84,8 @@ const Dashboard = () => {
         const fetchUserDetails = async () => {
             try {
                 const response = await axios.get('http://localhost:5000/api/users');
-                setUserDetails(response.data[0]);
-                console.log(response.data[0]);
+                setUserDetails(response.data);
+                console.log(response.data);
             } catch (error) {
                 console.error("Error fetching user details:", error);
             }
@@ -99,7 +99,7 @@ const Dashboard = () => {
             <div className="flex min-h-screen bg-gray-900 text-white">
                 <Sidebar />
 
-                <div className="flex-1 p-8 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 14px)' }}> 
+                <div className="flex-1 p-8 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 14px)' }}>
                     <div className="flex justify-between items-center mb-8">
                         <div className="relative">
                             <Search className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" />
@@ -142,7 +142,7 @@ const Dashboard = () => {
                     <div className="grid grid-cols-3 gap-8">
                         <div className="col-span-2">
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-lg font-semibold">Popular Course</h2>
+                                <h2 className="text-lg font-semibold">Recommended Course</h2>
                                 <button className="text-purple-400 text-sm">View All</button>
                             </div>
 
@@ -192,8 +192,8 @@ const Dashboard = () => {
                                                     <td className="p-4">{course.progress}</td>
                                                     <td className="p-4">
                                                         <span className={`px-2 py-1 rounded text-sm ${course.status === 'Complete'
-                                                                ? 'bg-green-800 text-green-200'
-                                                                : 'bg-yellow-800 text-yellow-200'
+                                                            ? 'bg-green-800 text-green-200'
+                                                            : 'bg-yellow-800 text-yellow-200'
                                                             }`}>
                                                             {course.status}
                                                         </span>
@@ -211,7 +211,15 @@ const Dashboard = () => {
                         <div className="bg-gray-800 p-4 rounded-lg shadow-sm">
                             <h2 className="text-lg font-semibold mb-4">Course Distribution</h2>
                             <PieChart width={300} height={300}>
-                                <Pie data={courseDistribution} dataKey="value" outerRadius={100} fill="#8884d8" label>
+                                <Pie
+                                    data={courseDistribution}
+                                    dataKey="value"
+                                    outerRadius={100}
+                                    fill="#8884d8"
+                                    label
+                                    isAnimationActive={true} 
+                                    animationDuration={500} 
+                                >
                                     {courseDistribution.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.color} />
                                     ))}
@@ -229,6 +237,7 @@ const Dashboard = () => {
                                 ))}
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>

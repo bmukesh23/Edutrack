@@ -27,9 +27,15 @@ def generate_mcqs(prompt):
         temperature=1,
         max_tokens=1024,
         top_p=1,
-        stream=False,  
+        stream=False,
         stop=None,
     )
 
-    mcqs = completion.choices[0].message['content']
-    return mcqs.split('\n') 
+    # Check the response structure
+    print(completion)  # Debugging line to see the structure of the response
+
+    # Access the content based on the actual structure of the response
+    mcqs_content = completion.choices[0].message.content  # Access content correctly
+    mcqs = mcqs_content.split('\n')  # Split into individual lines
+
+    return mcqs

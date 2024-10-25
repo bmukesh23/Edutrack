@@ -37,7 +37,7 @@ const LearnerForm = () => {
     const fetchUserData = async () => {
       try {
         const { data } = await axios.get('http://localhost:5000/api/users');
-        if (data.length > 0) setUser({ name: data[0].name, email: data[0].email });
+        if (data) setUser({ name: data.name, email: data.email });
         console.log(data);
       } catch (error) {
         console.error("Error fetching user data:", error);
