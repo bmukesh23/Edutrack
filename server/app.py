@@ -1,22 +1,22 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
+from llamaModel import generate_mcqs  
 
 app = Flask(__name__)
-CORS(app) 
-
+CORS(app)
 
 # MongoDB Setup
 client = MongoClient("mongodb://localhost:27017/")
 db = client["elearning_db"]
 users_collection = db["users"]
 
-# home
+# Home route
 @app.route('/', methods=['GET'])
 def greet():
     return "Hello World"
 
-# auth users
+# User Signup
 @app.route('/api/signup', methods=['POST'])
 def signup():
     user_data = request.json
@@ -30,30 +30,66 @@ def signup():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# fetch user
-@app.route('/api/user/<email>', methods=['GET'])
-def get_user(email):
+# Fetch All Users
+@app.route('/api/users', methods=['GET'])
+def get_all_users():
     try:
-        user = users_collection.find_one({"email": email}, {"_id": 0, "name": 1, "email": 1})
-        if user:
-            return jsonify(user), 200
+        users = list(users_collection.find({}, {"_id": 0, "name": 1, "email": 1, "photoURL": 1}))
+        if users:
+            return jsonify(users), 200
         else:
-            return jsonify({"error": "User not found"}), 404
+            return jsonify({"error": "No users found"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# Submit Learner Preferences
 @app.route('/api/learners', methods=['POST'])
 def submit_learner():
     learner_data = request.json
     try:
-        users_collection.update_one(
+        result = users_collection.update_one(
             {"email": learner_data["email"]},
             {"$set": {"profile": learner_data["profile"]}}
         )
-        return jsonify({"message": "Learner profile updated successfully!"}), 201
+        if result.matched_count == 0:
+            return jsonify({"error": "User not found."}), 404
+        return jsonify({"message": "Learner profile updated successfully!"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# Fetch Specific User Data
+# def get_user_data(email):
+#     user = users_collection.find_one({"email": email}, {"_id": 0, "interests": 1, "past_courses": 1, "goals": 1})
+#     return user
+#     print(user)
+
+# # Generate Quiz Based on User Data
+# @app.route('/api/generate-quiz', methods=['POST'])
+# def generate_quiz_route():
+#     data = request.json
+#     email = data.get("email")
+
+#     try:
+#         user_data = get_user_data(email)
+#         if not user_data:
+#             return jsonify({"error": "User not found."}), 404
+        
+#         interests = user_data.get("interests", [])
+#         past_courses = user_data.get("past_courses", [])
+#         goals = user_data.get("goals", [])
+
+#         # Create a prompt based on user data
+#         prompt = "Generate multiple-choice questions based on the following information:\n"
+#         prompt += f"Interests: {', '.join(interests)}\n"
+#         prompt += f"Past Courses: {', '.join(past_courses)}\n"
+#         prompt += f"Goals: {', '.join(goals)}\n"
+#         prompt += "Please provide 5 intermediate-level questions."
+
+#         mcqs = generate_mcqs(prompt)  # Call the MCQ generation function
+#         return jsonify(mcqs), 200
+
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

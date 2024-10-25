@@ -2,10 +2,8 @@ import os
 from dotenv import load_dotenv
 from groq import Groq
 
-# Load environment variables from .env file
 load_dotenv()
 
-# Now the environment variable can be accessed
 api_key = os.getenv("GROQ_API_KEY")
 
 if not api_key:
@@ -13,24 +11,25 @@ if not api_key:
 
 client = Groq(api_key=api_key)
 
-completion = client.chat.completions.create(
-    model="llama-3.2-11b-text-preview",
-    messages=[
-        {
-            "role": "system",
-            "content": "You are a helpful assistant who generates multiple-choice questions."
-        },
-        {
-            "role": "user",
-            "content": "Generate 5 intermediate-level multiple-choice questions on Science."
-        },
-    ],
-    temperature=1,
-    max_tokens=1024,
-    top_p=1,
-    stream=True,
-    stop=None,
-)
+def generate_mcqs(prompt):
+    completion = client.chat.completions.create(
+        model="llama-3.2-11b-text-preview",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful assistant who generates multiple-choice questions."
+            },
+            {
+                "role": "user",
+                "content": prompt
+            },
+        ],
+        temperature=1,
+        max_tokens=1024,
+        top_p=1,
+        stream=False,  
+        stop=None,
+    )
 
-for chunk in completion:
-    print(chunk.choices[0].delta.content or "", end="")
+    mcqs = completion.choices[0].message['content']
+    return mcqs.split('\n') 

@@ -33,7 +33,7 @@ const SignUp = () => {
                 console.log("User registered successfully.");
             }
             
-            navigate("/dashboard");
+            navigate("/learner_form");
         } catch (error) {
             console.error("Authentication error:", error);
         } finally {
