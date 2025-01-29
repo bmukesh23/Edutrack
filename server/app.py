@@ -14,7 +14,7 @@ users_collection = db["users"]
 # Home route
 @app.route('/', methods=['GET'])
 def greet():
-    return "Hello World"
+    return jsonify({"message": "Hello, World!"})
 
 # User Signup
 @app.route('/api/signup', methods=['POST'])
