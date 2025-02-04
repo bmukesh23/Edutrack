@@ -11,6 +11,7 @@ Serve Shared Static Files
 
 from __future__ import annotations
 
+import collections.abc as cabc
 import importlib.util
 import mimetypes
 import os
@@ -29,8 +30,8 @@ from ..utils import get_content_type
 from ..wsgi import get_path_info
 from ..wsgi import wrap_file
 
-_TOpener = t.Callable[[], t.Tuple[t.IO[bytes], datetime, int]]
-_TLoader = t.Callable[[t.Optional[str]], t.Tuple[t.Optional[str], t.Optional[_TOpener]]]
+_TOpener = t.Callable[[], tuple[t.IO[bytes], datetime, int]]
+_TLoader = t.Callable[[t.Optional[str]], tuple[t.Optional[str], t.Optional[_TOpener]]]
 
 if t.TYPE_CHECKING:
     from _typeshed.wsgi import StartResponse
@@ -103,7 +104,7 @@ class SharedDataMiddleware:
         self,
         app: WSGIApplication,
         exports: (
-            dict[str, str | tuple[str, str]]
+            cabc.Mapping[str, str | tuple[str, str]]
             | t.Iterable[tuple[str, str | tuple[str, str]]]
         ),
         disallow: None = None,
@@ -116,7 +117,7 @@ class SharedDataMiddleware:
         self.cache = cache
         self.cache_timeout = cache_timeout
 
-        if isinstance(exports, dict):
+        if isinstance(exports, cabc.Mapping):
             exports = exports.items()
 
         for key, value in exports:
