@@ -1,13 +1,18 @@
+import os 
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
 from llamaModel import generate_mcqs  
 
+load_dotenv()
+
 app = Flask(__name__)
 CORS(app)
 
 # MongoDB Setup
-client = MongoClient("mongodb+srv://testuser:YIwJlD2X9xkZ1B6y@edutrack.afbtg.mongodb.net/?retryWrites=true&w=majority&appName=edutrack")
+mongo_uri = os.getenv("MONGO_URI")
+client = MongoClient(mongo_uri)
 db = client["elearning_db"]
 users_collection = db["users"]
 
