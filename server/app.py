@@ -7,7 +7,7 @@ app = Flask(__name__)
 CORS(app)
 
 # MongoDB Setup
-client = MongoClient("mongodb://localhost:27017/")
+client = MongoClient("mongodb+srv://testuser:YIwJlD2X9xkZ1B6y@edutrack.afbtg.mongodb.net/?retryWrites=true&w=majority&appName=edutrack")
 db = client["elearning_db"]
 users_collection = db["users"]
 
