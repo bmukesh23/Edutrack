@@ -36,7 +36,7 @@ const LearnerForm = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const { data } = await axios.get('http://localhost:5000/api/users');
+        const { data } = await axios.get('/api/users');
         if (data) setUser({ name: data.name, email: data.email });
         console.log(data);
       } catch (error) {

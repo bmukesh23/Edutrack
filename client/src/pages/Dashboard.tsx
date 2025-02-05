@@ -83,7 +83,7 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchUserDetails = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/users');
+                const response = await axios.get('/api/users');
                 setUserDetails(response.data);
                 console.log(response.data);
             } catch (error) {

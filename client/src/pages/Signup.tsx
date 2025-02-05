@@ -24,7 +24,7 @@ const SignUp = () => {
                 photoURL: user.photoURL,
             };
 
-            const response = await axios.post("http://localhost:5000/api/signup", userData);
+            const response = await axios.post("/api/signup", userData);
             // console.log(response.data); 
 
             if (response.data.message === "User already exists, logging in!") {
