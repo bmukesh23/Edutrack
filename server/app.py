@@ -15,6 +15,7 @@ mongo_uri = os.getenv("MONGO_URI")
 client = MongoClient(mongo_uri)
 db = client["elearning_db"]
 users_collection = db["users"]
+users_collection.create_index([("email", 1)])
 
 # Home route
 @app.route('/', methods=['GET'])
@@ -50,38 +51,34 @@ def submit_learner():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Fetch All Users
+# Fetch All Users with Index Optimization
 @app.route('/api/users', methods=['GET'])
-def get_first_user():
+def get_all_users():
     try:
-        # Fetch only the first document and limit the projection
-        user = users_collection.find_one(
-            {}, 
-            {
-                "_id": 0,
-                "name": 1,
-                "email": 1,
-                "photoURL": 1,
-                "profile.interests": 1,
-                "profile.past_courses": 1,
-                "profile.goals": 1
-            }
-        )
-        
-        # Format the user document to move profile fields to the top level
-        if user:
-            formatted_user = {
-                "name": user.get("name"),
-                "email": user.get("email"),
-                "photoURL": user.get("photoURL"),
-                "interests": user.get("profile", {}).get("interests", []),
-                "past_courses": user.get("profile", {}).get("past_courses", []),
-                "goals": user.get("profile", {}).get("goals", "")
-            }
+        # Fetch all users with required fields
+        users = list(users_collection.find({}, {"_id": 0, "name": 1, "email": 1, "photoURL": 1}))
 
-            return jsonify(formatted_user), 200
+        if users:
+            return jsonify(users), 200
         else:
-            return jsonify({"error": "No user found"}), 404
+            return jsonify({"error": "No users found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Fetch Learner by Email
+@app.route('/api/learner/users', methods=['GET'])
+def get_learner_by_email():
+    email = request.args.get("email")
+    try:
+        if email:
+            learner = users_collection.find_one({"email": email}, {"_id": 0, "profile": 1})
+            if learner:
+                return jsonify(learner), 200
+            else:
+                return jsonify({"error": "User not found"}), 404
+        else:
+            learners = list(users_collection.find({}, {"_id": 0, "email": 1, "profile": 1}))
+            return jsonify(learners), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

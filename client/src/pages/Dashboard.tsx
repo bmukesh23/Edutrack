@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { PieChart, Pie, Cell } from 'recharts';
 import Sidebar from '@/layouts/Sidebar';
-import axios from 'axios';
+import axiosInstance from '@/utils/axiosInstance';
 
 interface UserDetails {
     name: string;
@@ -83,7 +83,7 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchUserDetails = async () => {
             try {
-                const response = await axios.get('/api/users');
+                const response = await axiosInstance.get('/api/users');
                 setUserDetails(response.data);
                 console.log(response.data);
             } catch (error) {

@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input'; 
 import { useNavigate } from 'react-router-dom';
+import axiosInstance from '@/utils/axiosInstance';
 
 const learnerSchema = z.object({
   profile: z.object({
@@ -36,7 +36,7 @@ const LearnerForm = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const { data } = await axios.get('/api/users');
+        const { data } = await axiosInstance.get('/api/users');
         if (data) setUser({ name: data.name, email: data.email });
         console.log(data);
       } catch (error) {
@@ -59,7 +59,7 @@ const LearnerForm = () => {
     };
 
     try {
-      await axios.post('http://localhost:5000/api/learners', combinedData);
+      await axiosInstance.post('/api/learners', combinedData);
       navigate("/dashboard");
       reset(); 
     } catch (error) {

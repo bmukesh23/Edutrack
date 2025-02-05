@@ -5,7 +5,7 @@ import { auth, provider } from "@/utils/firebaseConfig";
 import { FaGoogle } from "react-icons/fa6";
 import Navbar from "@/layouts/Navbar";
 import Loader from "@/components/ui/Loader";
-import axios from "axios";
+import axiosInstance from "@/utils/axiosInstance";
 
 const SignUp = () => {
     const navigate = useNavigate();
@@ -16,7 +16,6 @@ const SignUp = () => {
         try {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
-            // console.log(user);
 
             const userData = {
                 name: user.displayName,
@@ -24,16 +23,27 @@ const SignUp = () => {
                 photoURL: user.photoURL,
             };
 
-            const response = await axios.post("/api/signup", userData);
-            // console.log(response.data); 
+            const response = await axiosInstance.post('/api/signup', userData);
+            // console.log(response.data);
 
             if (response.data.message === "User already exists, logging in!") {
                 console.log("User exists, proceeding to dashboard.");
             } else {
                 console.log("User registered successfully.");
             }
-            
-            navigate("/learner_form");
+
+            // Fetch user profile data to check if they have filled the learner form
+            const profileResponse = await axiosInstance.get(`/api/learner/users?email=${user.email}`);
+
+            console.log(profileResponse.data);
+
+            if (profileResponse.data?.profile) {
+                console.log("User already completed learner form. Redirecting to dashboard.");
+                navigate("/dashboard");
+            } else {
+                console.log("User has not completed learner form. Redirecting to learner form.");
+                navigate("/learner_form");
+            }
         } catch (error) {
             console.error("Authentication error:", error);
         } finally {
