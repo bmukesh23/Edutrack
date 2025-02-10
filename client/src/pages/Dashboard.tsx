@@ -1,19 +1,12 @@
 import { useEffect, useState } from 'react';
 import {
     Search,
-    Bell,
-    ChevronDown,
     Bookmark,
 } from 'lucide-react';
 import { PieChart, Pie, Cell } from 'recharts';
 import Sidebar from '@/layouts/Sidebar';
 import axiosInstance from '@/utils/axiosInstance';
-
-interface UserDetails {
-    name: string;
-    photoURL: string;
-    // Add any other properties that are expected in userDetails
-}
+import { DashboardUserDetails } from '@/utils/types';
 
 const Dashboard = () => {
     const metricsData = [
@@ -78,21 +71,26 @@ const Dashboard = () => {
         },
     ];
 
-    const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
+    const [userDetails, setUserDetails] = useState<DashboardUserDetails | null>(null);
 
     useEffect(() => {
         const fetchUserDetails = async () => {
             try {
-                const response = await axiosInstance.get('/api/users');
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    console.error("No token found");
+                    return;
+                }
+                const response = await axiosInstance.get("/api/users/me");
+                console.log("User Details:", response.data); // Debugging line
                 setUserDetails(response.data);
-                console.log(response.data);
             } catch (error) {
                 console.error("Error fetching user details:", error);
             }
         };
-
         fetchUserDetails();
     }, []);
+
 
     return (
         <>
@@ -110,21 +108,15 @@ const Dashboard = () => {
                             />
                         </div>
 
-                        <div className="flex items-center space-x-4">
-                            <button className="p-2 relative">
-                                <Bell className="w-6 h-6 text-gray-400" />
-                                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                            </button>
-                            <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full"></div>
-                            {/* Check if userDetails is not null before rendering user info */}
+                        <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full"/>
                             {userDetails ? (
                                 <>
-                                    <span className="font-medium">{userDetails.name}</span>
+                                    <span className="font-medium pr-1">{userDetails.name}</span>
                                 </>
                             ) : (
                                 <span className="font-medium">Loading...</span> // Fallback if userDetails is null
                             )}
-                            <ChevronDown className="w-4 h-4 text-gray-400" />
                         </div>
                     </div>
 
@@ -217,8 +209,8 @@ const Dashboard = () => {
                                     outerRadius={100}
                                     fill="#8884d8"
                                     label
-                                    isAnimationActive={true} 
-                                    animationDuration={500} 
+                                    isAnimationActive={true}
+                                    animationDuration={500}
                                 >
                                     {courseDistribution.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.color} />

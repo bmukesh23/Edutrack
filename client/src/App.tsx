@@ -5,8 +5,9 @@ import Courses from "./pages/Courses";
 import Assignments from "./pages/Assignments";
 import SavedCourses from "./pages/SavedCourses";
 import Messages from "./pages/Messages";
-import LearnerForm from "./pages/LearnerForm";
 import Settings from "./pages/Settings";
+import PreferencesForm from "./pages/PreferencesForm";
+import Assessment from "./pages/Assessment";
 
 function App() {
 
@@ -16,10 +17,11 @@ function App() {
         <Route path='/' element={<Signup />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/mycourses" element={<Courses />} />
+        <Route path="/preferences-form" element={<PreferencesForm />} />
+        <Route path="/assessment" element={<Assessment />} />
         <Route path="/assignments" element={<Assignments />} />
         <Route path="/saved_courses" element={<SavedCourses />} />
         <Route path="/messages" element={<Messages />} />
-        <Route path="/learner_form" element={<LearnerForm />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>
     </Router>
