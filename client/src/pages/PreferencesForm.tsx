@@ -2,7 +2,7 @@ import axiosInstance from "@/utils/axiosInstance";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/layouts/Navbar";
-import useUserDetails from "@/hooks/useUserdetails";
+import useUserDetails from "@/hook/useUserdetails";
 
 const PreferencesForm = () => {
   const [subjects, setSubjects] = useState("");

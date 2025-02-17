@@ -2,8 +2,8 @@ import Sidebar from "@/layouts/Sidebar";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { Search } from "lucide-react";
-import useUserDetails from "@/hooks/useUserdetails";
-import useCourse from "@/hooks/useCourse";
+import useUserDetails from "@/hook/useUserDetails";
+import useCourse from "@/hook/useCourse";
 
 const Courses = () => {
   const { userDetails, loading } = useUserDetails();

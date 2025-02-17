@@ -1,8 +1,8 @@
 import { Search, Bookmark } from 'lucide-react';
 import { PieChart, Pie, Cell } from 'recharts';
 import Sidebar from '@/layouts/Sidebar';
-import useUserDetails from '@/hooks/useUserdetails';
-import useCourse from '@/hooks/useCourse';
+import useUserDetails from '@/hook/useUserDetails';
+import useCourse from '@/hook/useCourse';
 
 const Dashboard = () => {
     const metricsData = [
