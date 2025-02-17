@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
-from gemma import generate_assessment
+from assessment import generate_assessment, generate_course, async_generate_course
 from datetime import datetime, timedelta
 from functools import wraps
 
@@ -22,6 +22,7 @@ try:
     db = client["edutrack"]
     users_collection = db["users"]
     assessments_collection = db["assessments"]
+    courses_collection = db["courses"]
     print("Connected to MongoDB")
 except Exception as e:
     print(f"MongoDB connection error: {e}")
@@ -118,7 +119,7 @@ def save_preferences(user_email):
             {"$set": {"preferences": data}},
             upsert=True
         )
-        return jsonify({"message": "Preferences saved", "user_email": user_email})
+        return jsonify({"message": "Preferences saved", "user_email": user_email}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -135,22 +136,29 @@ def generate_assessment_route(user_email):
 def save_assessment(user_email):
     try:
         data = request.json
+        print("Received Data:", data)
+
+        if data is None:
+            return jsonify({"error": "No data received"}), 400
+
         required_fields = ["questions", "score", "total_questions"]
 
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
 
         data["email"] = user_email
-        data["timestamp"] = datetime.utcnow().isoformat()
+        data["timestamp"] = datetime.utcnow().isoformat()  
 
-        assessments_collection.update_one(
-            {"email": user_email},
-            {"$set": data},
-            upsert=True
-        )
+        assessments_collection.insert_one(data)
+        print("New assessment saved successfully.")
 
-        return jsonify({"message": "Assessment saved successfully!"}), 201
+        # Trigger async course generation
+        async_generate_course(user_email)
+
+        return jsonify({"message": "Assessment saved. Course generation in progress."}), 200
+
     except Exception as e:
+        print("Error in save_assessment:", str(e))
         return jsonify({"error": str(e)}), 500
 
 # Get Assessment
@@ -163,6 +171,48 @@ def get_assessment(user_email):
         return jsonify({"error": "Assessment not found"}), 404
 
     return jsonify(assessment), 200
+
+# Generate Course
+@app.route("/generate-course", methods=["POST"])
+@token_required
+def generate_course_route(user_email):
+    course_response, status_code = generate_course(user_email)
+    return jsonify(course_response), status_code
+
+# Get Courses
+@app.route("/api/get-courses", methods=["GET"])
+@token_required
+def get_courses(user_email):
+    try:
+        courses = list(
+            courses_collection.find(
+                {"email": user_email}, 
+                {
+                    "_id": 0, 
+                    "course.course_title": 1, 
+                    "course.course_summary": 1, 
+                    "timestamp": 1, 
+                    "course.chapters": 1
+                }
+            )
+        )
+
+        if not courses:
+            return jsonify({"error": "No courses found"}), 404
+
+        formatted_courses = []
+        for course in courses:
+            formatted_courses.append({
+                "course_title": course.get("course", {}).get("course_title", ""),
+                "course_summary": course.get("course", {}).get("course_summary", ""),
+                "timestamp": course.get("timestamp", ""),
+                "chapters": course.get("course", {}).get("chapters", []),
+                "totalLessons": len(course.get("course", {}).get("chapters", []))
+            })
+
+        return jsonify({"courses": formatted_courses}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
