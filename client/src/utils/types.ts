@@ -24,8 +24,20 @@ export interface Question {
 }
 
 export interface Course {
-  course_title: string;
-  course_summary: string;
-  timestamp: string;
-  totalLessons: number;
+    _id: string;
+    course_title: string;
+    course_summary: string;
+    timestamp: string;
+    totalLessons: number;
+}
+
+export interface Chapter {
+    chapter_title: string;
+    chapter_summary: string;
+}
+
+export interface CourseDetailsTypes {
+    course_title: string;
+    course_summary: string;
+    chapters: Chapter[];
 }

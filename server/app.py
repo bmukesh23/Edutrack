@@ -7,6 +7,7 @@ from pymongo import MongoClient
 from assessment import generate_assessment, generate_course, async_generate_course
 from datetime import datetime, timedelta
 from functools import wraps
+from bson import ObjectId
 
 load_dotenv()
 
@@ -193,7 +194,7 @@ def get_courses(user_email):
             courses_collection.find(
                 {"email": user_email}, 
                 {
-                    "_id": 0, 
+                    "_id": 1, 
                     "course.course_title": 1, 
                     "course.course_summary": 1, 
                     "timestamp": 1, 
@@ -208,6 +209,7 @@ def get_courses(user_email):
         formatted_courses = []
         for course in courses:
             formatted_courses.append({
+                "_id": str(course.get("_id")),
                 "course_title": course.get("course", {}).get("course_title", ""),
                 "course_summary": course.get("course", {}).get("course_summary", ""),
                 "timestamp": course.get("timestamp", ""),
@@ -216,6 +218,33 @@ def get_courses(user_email):
             })
 
         return jsonify({"courses": formatted_courses}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Get Course by ID
+@app.route("/api/courses/<course_identifier>", methods=["GET"])
+@token_required
+def get_course_details(user_email, course_identifier):
+    try:
+        if course_identifier:
+            course = courses_collection.find_one({"_id": course_identifier, "email": user_email})
+        else:
+            return jsonify({"error": "Invalid course ID format"}), 400
+        
+        if not course:
+            return jsonify({"error": "Course not found"}), 404
+
+        formatted_course = {
+            "_id": str(course.get("_id")),
+            "course_title": course.get("course", {}).get("course_title", ""),
+            "course_summary": course.get("course", {}).get("course_summary", ""),
+            "timestamp": course.get("timestamp", ""),
+            "chapters": course.get("course", {}).get("chapters", []),
+            "totalLessons": len(course.get("course", {}).get("chapters", []))
+        }
+
+        return jsonify(formatted_course), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

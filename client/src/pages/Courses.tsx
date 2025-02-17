@@ -4,10 +4,12 @@ import { format } from "date-fns";
 import { Search } from "lucide-react";
 import useUserDetails from "@/hook/useUserDetails";
 import useCourse from "@/hook/useCourse";
+import { useNavigate } from "react-router-dom";
 
 const Courses = () => {
   const { userDetails, loading } = useUserDetails();
   const { courses } = useCourse();
+  const navigate = useNavigate();
 
   return (
     <section className="flex min-h-screen bg-gray-900 text-white">
@@ -26,7 +28,7 @@ const Courses = () => {
 
           {userDetails ? (
             <div className="flex items-center space-x-3">
-              <img src={userDetails?.photoURL} className='w-8 h-8 rounded-full' />
+              <img src={userDetails?.photoURL} alt="User Profile" className='w-8 h-8 rounded-full' />
               <span className="font-medium pr-1">{userDetails.name}</span>
             </div>
           ) : (
@@ -51,14 +53,18 @@ const Courses = () => {
                     <div className="p-4">
                       <h3 className="font-medium mb-2">{course.course_title}</h3>
                       <div className="text-sm text-gray-400">
-                        {course.totalLessons} Lessons •  22 Hours
+                        {course.totalLessons || 0} Lessons •  22 Hours
                       </div>
                       <p className="text-gray-600 text-xs line-clamp-2">{course.course_summary}</p>
                       <p className="text-xs text-purple-400 mt-2">
                         Created on {course.timestamp ? format(new Date(course.timestamp), "PPP") : "Unknown Date"}
                       </p>
-                      <Button className="mt-4 w-full bg-blue-600">
-                        {loading ? "Generating..." : "View"}
+
+                      <Button
+                        className="mt-4 w-full bg-blue-600"
+                        onClick={() => navigate(`/mycourses/${course._id}`)}
+                      >
+                        View
                       </Button>
                     </div>
                   </div>
