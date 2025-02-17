@@ -1,39 +1,15 @@
 import axiosInstance from "@/utils/axiosInstance";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserDetails } from "@/utils/types";
 import Navbar from "@/layouts/Navbar";
+import useUserDetails from "@/hooks/useUserdetails";
 
 const PreferencesForm = () => {
   const [subjects, setSubjects] = useState("");
   const [skillLevel, setSkillLevel] = useState("");
   const [learningGoal, setLearningGoal] = useState("");
-  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchUserDetails = async () => {
-      try {
-        const token = localStorage.getItem("token"); // Retrieve JWT token
-        if (!token) {
-          console.error("No token found, redirecting to login");
-          navigate("/"); // Redirect if not authenticated
-          return;
-        }
-
-        const response = await axiosInstance.get("/api/users/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        setUserDetails(response.data);
-      } catch (error) {
-        console.error("Error fetching user details:", error);
-        navigate("/"); // Redirect on error
-      }
-    };
-
-    fetchUserDetails();
-  }, [navigate]);
+  const {userDetails } = useUserDetails();
 
   const handleSubmit = async () => {
     if (!userDetails) {

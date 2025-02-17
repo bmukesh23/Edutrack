@@ -32,7 +32,7 @@ const SignUp = () => {
             if (response.data.token) {
                 localStorage.setItem("token", response.data.token);
                 console.log("signed-in successful. Token stored.");
-                navigate("/preferences-form");
+                navigate("/dashboard");
             } else {
                 console.error("signed-in response did not contain a token.");
             }
@@ -45,7 +45,7 @@ const SignUp = () => {
     };
 
     return (
-        <>
+        <main>
             <Navbar />
             <div className="relative pt-28">
                 <div className="bg-yellow-500 absolute top-[-6rem] h-[20.25rem] w-[50rem] rounded-full blur-[10rem] -z-10 right-[14rem] sm:w-[68.75rem]" />
@@ -74,7 +74,7 @@ const SignUp = () => {
                     </button>
                 </div>
             </div>
-        </>
+        </main>
     );
 };
 

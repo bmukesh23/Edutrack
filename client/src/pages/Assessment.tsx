@@ -12,6 +12,7 @@ const Assessment = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedOptions, setSelectedOptions] = useState<{ [key: number]: string }>({});
     const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
 
     useEffect(() => {
@@ -41,6 +42,7 @@ const Assessment = () => {
                 const response = await axiosInstance.post("/generate-assessment", { email });
                 if (response.status === 200 && response.data.questions) {
                     setQuestions(response.data.questions);
+                    console.log("Questions:", response.data.questions);
                 } else {
                     setError("Failed to generate assessment.");
                 }
@@ -62,11 +64,13 @@ const Assessment = () => {
     const handleSubmit = async () => {
         if (!userDetails) return;
         
+        setSubmitting(true);  // Show loading state
+    
         const timestamp = new Date().toISOString();
         const score = questions.reduce((acc, q, idx) => (
             acc + (selectedOptions[idx] === q.answer ? 1 : 0)
         ), 0);
-
+    
         const assessmentData = {
             email: userDetails.email,
             name: userDetails.name,
@@ -80,17 +84,24 @@ const Assessment = () => {
             score,
             total_questions: questions.length
         };
-
+    
         try {
-            await axiosInstance.post("/api/save-assessment", assessmentData);
-            alert("Assessment submitted successfully!");
-            navigate("/dashboard");
+            const response = await axiosInstance.post("/api/save-assessment", assessmentData);
+    
+            if (response.status === 200) {
+                alert("Assessment submitted successfully! Course created.");
+                navigate("/dashboard");
+            } else {
+                alert(response.data.error || "Failed to create course.");
+            }
         } catch (error) {
             console.error("Error submitting assessment:", error);
             alert("Failed to submit assessment.");
+        } finally {
+            setSubmitting(false);
         }
     };
-
+    
     const handleNext = () => {
         if (!selectedOptions[currentIndex]) return;
         if (currentIndex < questions.length - 1) {
@@ -106,6 +117,7 @@ const Assessment = () => {
         }
     };
 
+    if (submitting) return <p className="text-center text-white">Saving assessment and generating course...</p>;
     if (loading) return <p className="text-center text-white">Loading assessment...</p>;
     if (error) return <p className="text-red-500 text-center">{error}</p>;
     if (!userDetails) return <p className="text-center text-white">No user details found.</p>;
