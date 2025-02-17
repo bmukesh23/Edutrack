@@ -1,7 +1,7 @@
 import os
 import jwt
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from pymongo import MongoClient
 from assessment import generate_assessment, generate_course, async_generate_course
@@ -57,6 +57,11 @@ def token_required(f):
 @app.route("/", methods=["GET"])
 def greet():
     return jsonify({"message": "Hello, Welcome to the Edutrack server!"})
+
+# Favicon Route
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'logo.svg', mimetype='image/svg+xml')
 
 # Sign-Up/Login Route (Returns JWT Token)
 @app.route("/api/auth", methods=["POST"])
