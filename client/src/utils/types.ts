@@ -22,3 +22,10 @@ export interface Question {
     options: string[];
     answer: string;
 }
+
+export interface Course {
+  course_title: string;
+  course_summary: string;
+  timestamp: string;
+  totalLessons: number;
+}

@@ -1,5 +1,5 @@
 # 🎓 Edutrack
-An intelligent Learning Management System (LMS) that adapts to each user’s skill level and learning pace, ensuring a customized and effective learning experience.Built with React.ts and Gemma2-9b.
+An intelligent Learning Management System (LMS) that adapts to each user’s skill level and learning pace, ensuring a customized and effective learning experience.Built with React.ts and Gemini 2.0 Flash.
 
 ## 📦 Technologies
 
@@ -76,7 +76,7 @@ Before you begin, ensure you have the following installed on your machine:
     ```env
     SECRET_KEY=
     MONGO_URI=
-    GROQ_API_KEY=
+    GEMINI_API_KEY=
     ```
 
 5. **Run the application:**
