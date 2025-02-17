@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { BarChart2, Save, MessageSquareText, Pencil, BookMarked, Settings, LogOut } from 'lucide-react';
+import { BarChart2, Pencil, BookMarked, LogOut } from 'lucide-react';
 import Logo from "/logo.svg";
 
 const Sidebar = () => {
@@ -10,7 +10,7 @@ const Sidebar = () => {
     };
 
     return (
-        <>
+        <section>
             <div className="w-64 h-screen bg-yellow-700 text-slate-200 p-6 flex flex-col justify-between">
                 <nav>
                     <div>
@@ -24,6 +24,14 @@ const Sidebar = () => {
                         </div>
 
                         <ul className="space-y-2">
+                            <li>
+                                <NavLink
+                                    to="/preferences-form"
+                                    className={({ isActive }) => isActive ? "flex items-center space-x-2 p-2 rounded bg-yellow-800" : "flex items-center space-x-2 p-2 rounded hover:bg-yellow-800"}>
+                                    <Pencil size={20} />
+                                    <span>Create Course</span>
+                                </NavLink>
+                            </li>
                             <li>
                                 <NavLink
                                     to="/dashboard"
@@ -41,44 +49,6 @@ const Sidebar = () => {
                                 </NavLink>
                             </li>
                             <li>
-                                <NavLink
-                                    to="/assignments"
-                                    className={({ isActive }) => isActive ? "flex items-center space-x-2 p-2 rounded bg-yellow-800" : "flex items-center space-x-2 p-2 rounded hover:bg-yellow-800"}>
-                                    <Pencil size={20} />
-                                    <span>Assignments</span>
-                                </NavLink>
-                            </li>
-                            <li>
-                                <NavLink
-                                    to="/saved_courses"
-                                    className={({ isActive }) => isActive ? "flex items-center space-x-2 p-2 rounded bg-yellow-800" : "flex items-center space-x-2 p-2 rounded hover:bg-yellow-800"}>
-                                    <Save size={20} />
-                                    <span>Saved Courses</span>
-                                </NavLink>
-                            </li>
-                            <li>
-                                <NavLink
-                                    to="/messages"
-                                    className={({ isActive }) => isActive ? "flex items-center space-x-2 p-2 rounded bg-yellow-800" : "flex items-center space-x-2 p-2 rounded hover:bg-yellow-800"}>
-                                    <MessageSquareText size={20} />
-                                    <span>Messages</span>
-                                </NavLink>
-                            </li>
-                        </ul>
-
-                        <hr className='my-4 border-slate-300' />
-
-                        <ul className="space-y-2">
-                            <li>
-                                <NavLink
-                                    to="/settings"
-                                    className={({ isActive }) => isActive ? "flex items-center space-x-2 p-2 rounded bg-yellow-800" : "flex items-center space-x-2 p-2 rounded hover:bg-yellow-800"}>
-                                    <Settings size={20} />
-                                    <span>Settings</span>
-                                </NavLink>
-                            </li>
-                            {/* Logout Button */}
-                            <li>
                                 <button
                                     onClick={handleLogout}
                                     className="flex items-center space-x-2 p-2 rounded hover:bg-yellow-800 w-full text-left">
@@ -90,7 +60,7 @@ const Sidebar = () => {
                     </div>
                 </nav>
             </div>
-        </>
+        </section>
     )
 }
 export default Sidebar
