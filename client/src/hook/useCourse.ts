@@ -21,7 +21,7 @@ const useCourse = () => {
 
                 if (response.data.courses) {
                     setCourses(response.data.courses);
-                    console.log("Courses:", response.data);
+                    // console.log("Courses:", response.data);
                 }
             } catch (error) {
                 console.error("Error fetching courses:", error);

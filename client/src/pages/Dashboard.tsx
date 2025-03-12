@@ -1,8 +1,23 @@
-import { Search, Bookmark } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { PieChart, Pie, Cell } from 'recharts';
 import Sidebar from '@/layouts/Sidebar';
 import useUserDetails from '@/hook/useUserDetails';
 import useCourse from '@/hook/useCourse';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+
+const generateRandomPercentage = () => Math.floor(Math.random() * 100) + 1;
+
+// Predefined colors for distinct categories
+const categoryColors = [
+    '#3B82F6',
+    '#22C55E',
+    '#F97316',
+    '#8B5CF6',
+    '#EF4444',
+    '#F59E0B',
+];
 
 const Dashboard = () => {
     const metricsData = [
@@ -12,39 +27,17 @@ const Dashboard = () => {
         { label: 'Hour Spent', value: 5, color: '#8B5CF6' },
     ];
 
-    const courseDistribution = [
-        { name: 'Design', value: 40, color: '#8B5CF6' },
-        { name: 'Code', value: 30, color: '#6366F1' },
-        { name: 'Business', value: 20, color: '#EC4899' },
-        { name: 'Data', value: 10, color: '#14B8A6' },
-    ];
-
-    const popularCourses = [
-        {
-            title: 'Create 3D With Blender',
-            category: 'DESIGN',
-            lessons: 16,
-            hours: 48,
-            price: 100,
-        },
-        {
-            title: 'Digital Marketing',
-            category: 'BUSINESS',
-            lessons: 30,
-            hours: 48,
-            price: 100,
-        },
-        {
-            title: 'Slicing UI Design With Tailwind',
-            category: 'CODE',
-            lessons: 30,
-            hours: 48,
-            price: 100,
-        },
-    ];
-
-    const { userDetails } = useUserDetails();
+    const { userDetails, loading } = useUserDetails();
     const { courses } = useCourse();
+    const navigate = useNavigate();
+
+    // Extract unique categories and assign random percentages and colors
+    const uniqueCategories = [...new Set(courses.map(course => course.category))];
+    const courseDistribution = uniqueCategories.map((category, index) => ({
+        name: category,
+        value: generateRandomPercentage(),
+        color: categoryColors[index % categoryColors.length],
+    }));
 
     return (
         <section className="flex min-h-screen bg-gray-900 text-white">
@@ -74,43 +67,56 @@ const Dashboard = () => {
 
                 {/* The rest of the dashboard content */}
                 <div className="grid grid-cols-4 gap-4 mb-8">
-                    {metricsData.map((metric, index) => (
-                        <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-sm">
-                            <div className="text-3xl font-bold mb-1" style={{ color: metric.color }}>
-                                {metric.value}
+                    {metricsData.map((metric, index) => {
+                        let value = metric.value;
+                        if (metric.label === 'Ongoing') value = courses.length;
+
+                        return (
+                            <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-sm">
+                                <div className="text-3xl font-bold mb-1" style={{ color: metric.color }}>
+                                    {value}
+                                </div>
+                                <div className="text-gray-400 text-sm">{metric.label}</div>
                             </div>
-                            <div className="text-gray-400 text-sm">{metric.label}</div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
 
                 <div className="grid grid-cols-3 gap-8">
                     <div className="col-span-2">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-semibold">Recommended Course</h2>
-                            <button className="text-purple-400 text-sm">View All</button>
+                            <button className="text-purple-400 text-sm" onClick={() => navigate('/mycourses')}>View All</button>
                         </div>
 
-                        <div className="grid grid-cols-3 gap-4">
-                            {popularCourses.map((course, index) => (
-                                <div key={index} className="bg-gray-800 rounded-lg shadow-sm overflow-hidden">
-                                    <div className="w-full h-32 bg-gradient-to-r from-blue-400 to-blue-600"></div>
-                                    <div className="p-4">
-                                        <div className="text-sm text-purple-400 mb-1">{course.category}</div>
-                                        <h3 className="font-medium mb-2">{course.title}</h3>
-                                        <div className="text-sm text-gray-400">
-                                            {course.lessons} Lessons • {course.hours} Hours
-                                        </div>
-                                        <div className="mt-3 flex justify-between items-center">
-                                            <span className="font-medium">${course.price}</span>
-                                            <button className="text-purple-400">
-                                                <Bookmark className="w-5 h-5" />
-                                            </button>
+                        {loading ? (
+                            <p>Loading courses...</p>
+                        ) : (
+                            <div className="grid grid-cols-3 gap-4">
+                                {courses.slice(0,3).map((course, index) => (
+                                    <div key={index} className="bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                                        <div className="w-full h-32 bg-gradient-to-r from-blue-400 to-blue-600" />
+                                        <div className="p-4">
+                                            <h3 className="font-medium mb-2 line-clamp-2">{course.course_title}</h3>
+                                            <div className="text-sm text-gray-400">
+                                                {course.totalLessons || 0} Lessons •  22 Hours
+                                            </div>
+                                            <p className="text-gray-600 text-xs line-clamp-2">{course.course_summary}</p>
+                                            <p className="text-xs text-purple-400 mt-2">
+                                                Created on {course.timestamp ? format(new Date(course.timestamp), "PPP") : "Unknown Date"}
+                                            </p>
+
+                                            <Button
+                                                className="mt-4 w-full bg-blue-600"
+                                                onClick={() => navigate(`/mycourses/${course._id}`)}
+                                            >
+                                                View
+                                            </Button>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
 
                         <div className="mt-8">
                             <h2 className="text-lg font-semibold mb-4">My Course</h2>
@@ -137,8 +143,8 @@ const Dashboard = () => {
                                                 <td className="p-4 text-center">
                                                     <span className="px-2 py-1 rounded text-sm bg-yellow-800 text-yellow-200">Ongoing</span>
                                                 </td>
-                                                <td className="p-4 text-center">Advanced</td>
-                                                <td className="p-4 text-center">Code</td>
+                                                <td className="p-4 text-center">{course.difficulty}</td>
+                                                <td className="p-4 text-center">{course.category}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -168,7 +174,7 @@ const Dashboard = () => {
                             {courseDistribution.map((item, index) => (
                                 <div key={index} className="flex justify-between items-center mb-2">
                                     <div className="flex items-center">
-                                        <div className="w-3 h-3 mr-2" style={{ backgroundColor: item.color }}></div>
+                                        <div className="w-3 h-3 mr-2" style={{ backgroundColor: item.color }} />
                                         <span>{item.name}</span>
                                     </div>
                                     <span>{item.value}%</span>

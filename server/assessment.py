@@ -19,6 +19,7 @@ db = client["edutrack"]
 users_collection = db["users"]
 assessments_collection = db["assessments"]
 courses_collection = db["courses"]
+notes_collection = db["notes"]
 
 generation_config = {
     "temperature": 1,
@@ -54,7 +55,13 @@ def extract_json(text):
             match = re.search(r"(\{.*\})", text, re.DOTALL)
             json_text = match.group(1).strip() if match else None
 
-        return json.loads(json_text) if json_text else None
+        # return json.loads(json_text) if json_text else None
+
+        # Attempt to fix minor JSON issues before parsing
+        if json_text:
+            json_text = re.sub(r",\s*}", "}", json_text)  # Remove trailing commas
+            json_text = re.sub(r",\s*\]", "]", json_text)
+            return json.loads(json_text)
     except json.JSONDecodeError as e:
         print("JSON Decode Error:", e)
         return None
@@ -107,7 +114,7 @@ def generate_course(user_email):
         f"Generate a study material for {subject} {learningGoal}. "
         f"The level of difficulty should be {difficulty}. "
         "Provide a summary of the course, a list of chapters with summaries, "
-        "Format it strictly in JSON with a 'course' object containing 'course_title', 'course_summary', 'chapters' and 'chapters' object with 'chapter_title', 'chapter_summary'."
+        "Format it strictly in JSON with a 'course' object containing 'difficulty', 'category', 'course_title', 'course_summary', 'chapters' and 'chapters' object with 'chapter_title', 'chapter_summary', 'topics'."
     )
 
     chat_session = model.start_chat(history=[{"role": "user", "parts": [prompt]}])
@@ -131,3 +138,52 @@ def generate_course(user_email):
         "message": "New course generated and saved successfully!",
         "course": parsed_json,
     }, 201
+
+# Generate notes based on course ID
+def generate_notes(user_email, course_id):
+    try:
+        course = courses_collection.find_one({"_id": course_id, "email": user_email})
+
+        if not course:
+            return {"error": "Course not found"}, 404
+
+        chapters = course.get("course", {}).get("chapters", [])
+        if not chapters:
+            return {"error": "No chapters found in the course."}, 404
+
+        # Construct prompt for structured JSON output
+        chapter_details = "\n".join(
+            [f"Chapter {i+1}: {ch['chapter_title']} - {ch['chapter_summary']} (Topics: {', '.join(ch['topics'])})"
+             for i, ch in enumerate(chapters)]
+        )
+
+        prompt = (
+            "Generate detailed notes for each chapter in structured JSON format."
+            "Ensure all topic points are covered with clear explanations."
+            "Format it strictly as JSON with a 'notes' object containing a 'chapters' array."
+            "Each chapter should have 'chapter_title', 'chapter_summary', 'topic' and 'topic' object with 'key points', 'notes'."
+            f"The Chapters:\n{chapter_details}"
+        )
+
+        chat_session = model.start_chat(history=[{"role": "user", "parts": [prompt]}])
+        response = chat_session.send_message("Generate notes")
+
+        # Extract JSON from response
+        parsed_json = extract_json(response.text)
+        if not parsed_json or "notes" not in parsed_json:
+            return {"error": "Invalid JSON format"}, 500
+
+        # Save structured notes
+        notes_data = {
+            "course_id": str(course["_id"]),
+            "email": user_email,
+            "notes": parsed_json["notes"],  # Store JSON directly
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+
+        notes_collection.insert_one(notes_data)
+        return {"message": "Notes generated successfully!", "notes": parsed_json["notes"]}, 201
+
+    except Exception as e:
+        print("Error:", str(e))
+        return {"error": str(e)}, 500

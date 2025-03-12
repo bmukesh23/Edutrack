@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from pymongo import MongoClient
-from assessment import generate_assessment, generate_course, async_generate_course
+from assessment import generate_assessment, generate_course, async_generate_course, generate_notes
 from datetime import datetime, timedelta
 from functools import wraps
 from bson import ObjectId
@@ -24,10 +24,14 @@ try:
     users_collection = db["users"]
     assessments_collection = db["assessments"]
     courses_collection = db["courses"]
+    notes_collection = db["notes"]
     print("Connected to MongoDB")
 except Exception as e:
     print(f"MongoDB connection error: {e}")
     exit(1)
+
+course = db.courses.find_one({"_id": ObjectId("67b5fe585fd8f89bf2923eb5")})
+print(course)
 
 # JWT Token Required Decorator
 def token_required(f):
@@ -197,6 +201,8 @@ def get_courses(user_email):
                     "_id": 1, 
                     "course.course_title": 1, 
                     "course.course_summary": 1, 
+                    "course.category": 1,
+                    "course.difficulty": 1,
                     "timestamp": 1, 
                     "course.chapters": 1
                 }
@@ -212,6 +218,8 @@ def get_courses(user_email):
                 "_id": str(course.get("_id")),
                 "course_title": course.get("course", {}).get("course_title", ""),
                 "course_summary": course.get("course", {}).get("course_summary", ""),
+                "category": course.get("course", {}).get("category", ""),
+                "difficulty": course.get("course", {}).get("difficulty", ""),
                 "timestamp": course.get("timestamp", ""),
                 "chapters": course.get("course", {}).get("chapters", []),
                 "totalLessons": len(course.get("course", {}).get("chapters", []))
@@ -247,6 +255,35 @@ def get_course_details(user_email, course_identifier):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# Generate Notes
+@app.route("/api/generate-notes/<notes_identifier>", methods=["POST"])
+@token_required
+def generate_notes_route(user_email, notes_identifier):
+    print(notes_identifier)
+    response, status_code = generate_notes(user_email, notes_identifier)
+    return jsonify(response), status_code
+
+# Get Notes
+@app.route("/api/notes/<course_id>", methods=["GET"])
+@token_required
+def get_notes(user_email, course_id):
+    try:
+        print(f"Fetching notes for course_id: {course_id} and email: {user_email}")
+        notes_entry = notes_collection.find_one({"course_id": course_id, "email": user_email})
+        
+        if not notes_entry:
+            print("No notes found in DB.")
+            return jsonify({"error": "No notes found for this course."}), 404
+
+        # print("Notes entry found:", notes_entry)
+        notes_entry.pop("_id", None)
+
+        return jsonify(notes_entry), 200
+    except Exception as e:
+        print("Error fetching notes:", str(e))
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)

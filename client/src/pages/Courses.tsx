@@ -26,7 +26,7 @@ const Courses = () => {
             />
           </div>
 
-          {userDetails ? (
+          {userDetails?.photoURL ? (
             <div className="flex items-center space-x-3">
               <img src={userDetails?.photoURL} alt="User Profile" className='w-8 h-8 rounded-full' />
               <span className="font-medium pr-1">{userDetails.name}</span>
@@ -40,7 +40,6 @@ const Courses = () => {
           <div className="col-span-2">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">My Courses</h2>
-              <button className="text-purple-400 text-sm">View All</button>
             </div>
 
             {loading ? (
@@ -51,7 +50,7 @@ const Courses = () => {
                   <div key={index} className="bg-gray-800 rounded-lg shadow-sm overflow-hidden">
                     <div className="w-full h-32 bg-gradient-to-r from-blue-400 to-blue-600" />
                     <div className="p-4">
-                      <h3 className="font-medium mb-2">{course.course_title}</h3>
+                      <h3 className="font-medium mb-2 line-clamp-2">{course.course_title}</h3>
                       <div className="text-sm text-gray-400">
                         {course.totalLessons || 0} Lessons •  22 Hours
                       </div>

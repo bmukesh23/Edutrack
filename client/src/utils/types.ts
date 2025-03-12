@@ -29,6 +29,8 @@ export interface Course {
     course_summary: string;
     timestamp: string;
     totalLessons: number;
+    category: string;
+    difficulty: string;
 }
 
 export interface Chapter {
@@ -40,4 +42,5 @@ export interface CourseDetailsTypes {
     course_title: string;
     course_summary: string;
     chapters: Chapter[];
+    totalLessons: number;
 }

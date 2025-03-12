@@ -16,6 +16,7 @@ const useUserDetails = () => {
         }
         const response = await axiosInstance.get("/api/users/me");
         setUserDetails(response.data);
+        console.log(response.data);
       } catch (error) {
         console.error("Error fetching user details:", error);
       } finally {
