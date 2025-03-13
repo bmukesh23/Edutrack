@@ -100,7 +100,6 @@ const Notes = () => {
                       <div className="bg-gray-800 p-2 text-sm rounded-b-lg">
                         <p className="italic text-green-400">
                           KeyNotes:
-                          {/* <span className="text-sm text-gray-300 not-italic">{topic.key_points[0]}</span> */}
                           {topic.key_points.length > 0 ? (
                             <ol className="list-decimal list-inside ml-4 text-sm text-gray-300 not-italic">
                               {topic.key_points.map((point, index) => (
@@ -120,8 +119,6 @@ const Notes = () => {
                 <p className="text-gray-400">No topics available.</p>
               )}
             </div>
-
-
           </div>
         ) : (
           <p>No notes available.</p>

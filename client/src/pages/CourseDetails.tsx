@@ -12,6 +12,8 @@ const CourseDetails = () => {
   const [courseDetails, setCourseDetails] = useState<CourseDetailsTypes | null>(null);
   const [loading, setLoading] = useState(true);
   const [creatingNotes, setCreatingNotes] = useState(false);
+  const [creatingQuiz, setCreatingQuiz] = useState(false);
+
 
   useEffect(() => {
     const fetchCourseDetails = async () => {
@@ -70,8 +72,44 @@ const CourseDetails = () => {
     }
   };
 
+  const handleGenerateQuiz = async () => {
+    setCreatingQuiz(true);
+    try {
+      await axiosInstance.post(`/api/generate-quiz/${courseId}`);
+
+      const pollForQuiz = async () => {
+        try {
+          const response = await axiosInstance.get(`/api/get-quiz/${courseId}`);
+          if (response.status === 200 && response.data) {
+            navigate(`/mycourses/quiz/${courseId}`);
+          } else {
+            setTimeout(pollForQuiz, 5000);
+          }
+        } catch (error) {
+          const axiosError = error as AxiosError;
+          if (axiosError.response?.status === 404) {
+            setTimeout(pollForQuiz, 5000);
+          } else {
+            console.error("Error fetching quiz:", error);
+            setCreatingQuiz(false);
+          }
+        }
+      }
+
+      pollForQuiz();
+    } catch (error) {
+      console.error("Error generating notes:", error);
+    } finally {
+      setCreatingQuiz(false);
+    }
+  };
+
   const handleNotes = async () => {
     navigate(`/mycourses/notes/${courseId}`);
+  }
+
+  const handleQuiz = async () => {
+    navigate(`/mycourses/quiz/${courseId}`);
   }
 
   return (
@@ -115,15 +153,17 @@ const CourseDetails = () => {
                 <p className="flex items-center justify-center text-6xl text-center">💡</p>
                 <p className="font-semibold">Quiz</p>
                 <p className="text-[13px] font-semibold text-gray-400">Great way to test your knowledge</p>
+
                 <Button
                   className="bg-blue-500 px-4 py-1 mt-2 mr-2 rounded-md text-sm font-semibold hover:bg-blue-700"
-                  // onClick={handleGenerateNotes}
+                  onClick={handleGenerateQuiz}
+                  disabled={creatingQuiz}
                 >
-                  Generate
+                  {creatingQuiz ? "Generating..." : "Generate"}
                 </Button>
 
                 <Button
-                  // onClick={}
+                  onClick={handleQuiz}
                   className="bg-green-500 px-4 py-1 mt-2 rounded-md text-sm font-semibold hover:bg-green-700"
                 >
                   View

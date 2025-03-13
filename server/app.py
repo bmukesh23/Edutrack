@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from pymongo import MongoClient
-from assessment import generate_assessment, generate_course, async_generate_course, generate_notes
+from assessment import generate_assessment, generate_course, async_generate_course, generate_notes, generate_quiz_from_course
 from datetime import datetime, timedelta
 from functools import wraps
 from bson import ObjectId
@@ -229,7 +229,7 @@ def get_courses(user_email):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Get Course by ID
+# Get Courses by ID
 @app.route("/api/courses/<course_identifier>", methods=["GET"])
 @token_required
 def get_course_details(user_email, course_identifier):
@@ -256,7 +256,7 @@ def get_course_details(user_email, course_identifier):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Generate Notes
+# Generate Notes by course ID
 @app.route("/api/generate-notes/<notes_identifier>", methods=["POST"])
 @token_required
 def generate_notes_route(user_email, notes_identifier):
@@ -283,6 +283,41 @@ def get_notes(user_email, course_id):
     except Exception as e:
         print("Error fetching notes:", str(e))
         return jsonify({"error": str(e)}), 500
+
+# Generate quiz based on course ID
+@app.route("/api/generate-quiz/<course_id>", methods=["POST"])
+@token_required
+def generate_quiz_route(user_email, course_id):
+    response, status_code = generate_quiz_from_course(user_email, course_id)
+    return jsonify(response), status_code
+
+# Get quizzes based on course ID
+# @app.route("/api/get-quiz/<course_id>", methods=["GET"])
+# @token_required
+# def get_quiz_data(user_email, course_id):
+#     try:
+#         # Fetch quiz data based on user email and course ID
+#         quiz_data = assessments_collection.find_one(
+#             {"email": user_email, "course_id": course_id}, 
+#             {"_id": 0, "quiz": 1}
+#         )
+
+#         if not quiz_data:
+#             return jsonify({"error": "No quiz found for this course."}), 404
+
+#         return jsonify({"quiz": quiz_data["quiz"]}), 200
+
+#     except Exception as e:
+#         print("Error:", str(e))
+#         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/get-quiz/<course_id>", methods=["GET"])
+def get_quiz(course_id):
+    quiz = assessments_collection.find_one({"course_id": course_id})
+    if not quiz:
+        return jsonify({"error": "Quiz not found"}), 404
+    return jsonify({"quiz": quiz["quiz"]}), 200
 
 
 if __name__ == "__main__":

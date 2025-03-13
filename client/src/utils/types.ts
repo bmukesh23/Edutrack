@@ -44,3 +44,9 @@ export interface CourseDetailsTypes {
     chapters: Chapter[];
     totalLessons: number;
 }
+
+export type QuizQuestion = {
+    question: string;
+    options: string[];
+    answer: string;
+};

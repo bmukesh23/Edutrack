@@ -6,6 +6,7 @@ import PreferencesForm from "./pages/PreferencesForm";
 import Assessment from "./pages/Assessment";
 import CourseDetails from "./pages/CourseDetails";
 import Notes from "./pages/Notes";
+import Quiz from "./pages/Quiz";
 
 function App() {
 
@@ -19,6 +20,7 @@ function App() {
         <Route path="/mycourses" element={<Courses />} />
         <Route path="/mycourses/:courseId" element={<CourseDetails />} />
         <Route path="/mycourses/notes/:courseId" element={<Notes />} />
+        <Route path="/mycourses/quiz/:courseId" element={<Quiz />} />
       </Routes>
     </Router>
   );

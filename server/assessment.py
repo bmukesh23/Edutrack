@@ -187,3 +187,51 @@ def generate_notes(user_email, course_id):
     except Exception as e:
         print("Error:", str(e))
         return {"error": str(e)}, 500
+
+# Generate quizzes based on course ID
+def generate_quiz_from_course(user_email, course_id):
+    try:
+        course = courses_collection.find_one({"_id": course_id, "email": user_email})
+        
+        if not course:
+            return {"error": "Course not found"}, 404
+
+        chapters = course.get("course", {}).get("chapters", [])
+        if not chapters:
+            return {"error": "No chapters found in the course."}, 404
+
+        # Prepare prompt using chapter details
+        chapter_details = "\n".join(
+            [f"Chapter {i+1}: {ch['chapter_title']} - {ch['chapter_summary']} (Topics: {', '.join(ch['topics'])})"
+             for i, ch in enumerate(chapters)]
+        )
+
+        prompt = (
+            "Generate a quiz based on the following course chapters and topics. "
+            "The quiz should have 5-10 multiple-choice questions. "
+            "Format it strictly in JSON with a 'quiz' object containing 'quiz_title' and 'questions'. "
+            "Each question should have 'question', 'options', and 'answer'.\n"
+            f"The Chapters:\n{chapter_details}"
+        )
+
+        chat_session = model.start_chat(history=[{"role": "user", "parts": [prompt]}])
+        response = chat_session.send_message("Generate quiz")
+
+        parsed_json = extract_json(response.text)
+        if not parsed_json or "quiz" not in parsed_json:
+            return {"error": "Invalid JSON format"}, 500
+
+        # Save quiz to assessments collection
+        quiz_data = {
+            "email": user_email,
+            "course_id": str(course["_id"]),
+            "quiz": parsed_json["quiz"],
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+        assessments_collection.insert_one(quiz_data)
+        return {"message": "Quiz generated successfully!", "quiz": parsed_json["quiz"]}, 201
+
+    except Exception as e:
+        print("Error:", str(e))
+        return {"error": str(e)}, 500
