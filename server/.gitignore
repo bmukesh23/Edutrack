@@ -4,5 +4,10 @@
 #.venv
 *.venv
 
+# ignored files
+csv_maker.py
+training_data.csv
+train_difficulty_model.py
+
 #pycache
 __pycache__/
