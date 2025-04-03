@@ -4,5 +4,8 @@
 #.venv
 *.venv
 
+# ignored files
+csv_maker.py
+
 #pycache
 __pycache__/

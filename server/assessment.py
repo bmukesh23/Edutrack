@@ -8,6 +8,8 @@ from datetime import datetime
 from bson import ObjectId 
 from threading import Thread
 from flask import jsonify
+import pickle
+import numpy as np
 
 load_dotenv()
 
@@ -33,6 +35,16 @@ model = genai.GenerativeModel(
     model_name="gemini-2.0-flash",
     generation_config=generation_config,
 )
+
+
+# Load the trained model and label encoders
+try:
+    with open("difficulty_model.pkl", "rb") as f:
+        svm_model, label_encoder_subject, label_encoder_goal, label_encoder_difficulty = pickle.load(f)
+    print("Model and encoders loaded successfully!")
+except Exception as e:
+    print(f"Error loading model: {e}")
+    svm_model = None
 
 # Handler for generating assessment
 def async_generate_course(user_email):
@@ -91,49 +103,66 @@ def generate_assessment(user_email):
 
 # Generate course based on user assessment
 def generate_course(user_email):
+    if not svm_model:
+        return {"error": "Model not loaded"}, 500
+
+    # Fetch the user's most recent assessment data
     assessment = assessments_collection.find_one({"email": user_email}, sort=[("timestamp", -1)])
     if not assessment:
         return {"error": "No assessment data found for the user."}, 404
 
-    user = users_collection.find_one({"email": user_email})
-    if not user or "preferences" not in user:
-        return {"error": "User preferences not found"}, 404
-
-    preferences = user["preferences"]
-    subject = preferences.get("subjects", "General Knowledge")
-    learningGoal = preferences.get("learningGoal", "Learning")
-
+    subject = assessment.get("subject", "General Knowledge")
+    learning_goal = assessment.get("learning_goal", "Learning")
     user_score = assessment.get("score", 0)
     total_questions = assessment.get("total_questions", 1)
+    
+    # Avoid division errors
+    score_ratio = user_score / total_questions if total_questions else 0
 
-    difficulty = "Beginner" if user_score / total_questions < 0.5 else (
-        "Intermediate" if user_score / total_questions < 0.8 else "Advanced"
-    )
-
+    # Handle unseen subjects and goals
+    if subject not in label_encoder_subject.classes_:
+        subject_encoded = -1  # Default or unknown class encoding
+    else:
+        subject_encoded = label_encoder_subject.transform([subject])[0]
+    
+    if learning_goal not in label_encoder_goal.classes_:
+        learning_goal_encoded = -1
+    else:
+        learning_goal_encoded = label_encoder_goal.transform([learning_goal])[0]
+    
+    # Prepare the feature vector
+    X_new = np.array([[score_ratio, subject_encoded, learning_goal_encoded]])
+    
+    try:
+        predicted_difficulty_encoded = svm_model.predict(X_new)[0]
+        difficulty = label_encoder_difficulty.inverse_transform([predicted_difficulty_encoded])[0]
+    except Exception as e:
+        return {"error": "Failed to predict difficulty."}, 500
+    
+    # Generate the course using AI model
     prompt = (
-        f"Generate a study material for {subject} {learningGoal}. "
+        f"Generate a study material for {subject} {learning_goal}. "
         f"The level of difficulty should be {difficulty}. "
         "Provide a summary of the course, a list of chapters with summaries, "
-        "Format it strictly in JSON with a 'course' object containing 'difficulty', 'category', 'course_title', 'course_summary', 'chapters' and 'chapters' object with 'chapter_title', 'chapter_summary', 'topics'."
+        "Format it strictly in JSON with a 'course' object containing 'difficulty', 'category', 'course_title', 'course_summary', 'chapters' "
+        "and 'chapters' object with 'chapter_title', 'chapter_summary', 'topics'"
     )
 
     chat_session = model.start_chat(history=[{"role": "user", "parts": [prompt]}])
     response = chat_session.send_message("Generate course")
-
-    print("RAW GEMINI RESPONSE:", response.text)
-
+    
     parsed_json = extract_json(response.text)
     if not parsed_json or "course" not in parsed_json:
         return {"error": "Invalid JSON format"}, 500
-
-    # Add required metadata and save to MongoDB
-    parsed_json["_id"] = str(ObjectId())  
+    
+    # Save course to database
+    parsed_json["_id"] = str(ObjectId())
     parsed_json["email"] = user_email
-    parsed_json["assessment_id"] = str(assessment["_id"]) 
+    parsed_json["assessment_id"] = str(assessment["_id"])
     parsed_json["timestamp"] = datetime.utcnow().isoformat()
 
     courses_collection.insert_one(parsed_json)
-
+    
     return {
         "message": "New course generated and saved successfully!",
         "course": parsed_json,

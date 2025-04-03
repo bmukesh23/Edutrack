@@ -30,8 +30,16 @@ except Exception as e:
     print(f"MongoDB connection error: {e}")
     exit(1)
 
-course = db.courses.find_one({"_id": ObjectId("67b5fe585fd8f89bf2923eb5")})
-print(course)
+# Home Route
+@app.route("/", methods=["GET"])
+def greet():
+    return jsonify({"message": "Hello, Welcome to the Edutrack server!"})
+
+# Favicon Route
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'logo.svg', mimetype='image/svg+xml')
+
 
 # JWT Token Required Decorator
 def token_required(f):
@@ -57,16 +65,6 @@ def token_required(f):
             return jsonify({"error": "Invalid token"}), 401
 
     return decorated
-
-# Home Route
-@app.route("/", methods=["GET"])
-def greet():
-    return jsonify({"message": "Hello, Welcome to the Edutrack server!"})
-
-# Favicon Route
-@app.route('/favicon.ico')
-def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'), 'logo.svg', mimetype='image/svg+xml')
 
 # Sign-Up/Login Route (Returns JWT Token)
 @app.route("/api/auth", methods=["POST"])
@@ -146,7 +144,6 @@ def generate_assessment_route(user_email):
 def save_assessment(user_email):
     try:
         data = request.json
-        print("Received Data:", data)
 
         if data is None:
             return jsonify({"error": "No data received"}), 400
@@ -156,8 +153,22 @@ def save_assessment(user_email):
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
 
+        # Retrieve user preferences
+        user = users_collection.find_one({"email": user_email})
+        if not user or "preferences" not in user:
+            return jsonify({"error": "User preferences not found"}), 404
+
+        preferences = user["preferences"]
+        subject = preferences.get("subjects", "General Knowledge")
+        learning_goal = preferences.get("learningGoal", "Learning")
+
+        # Add subject and learning goal to assessment data
+        data["subject"] = subject
+        data["learning_goal"] = learning_goal
+
+        # Store the assessment with the additional fields
         data["email"] = user_email
-        data["timestamp"] = datetime.utcnow().isoformat()  
+        data["timestamp"] = datetime.utcnow().isoformat()
 
         assessments_collection.insert_one(data)
         print("New assessment saved successfully.")
@@ -292,26 +303,6 @@ def generate_quiz_route(user_email, course_id):
     return jsonify(response), status_code
 
 # Get quizzes based on course ID
-# @app.route("/api/get-quiz/<course_id>", methods=["GET"])
-# @token_required
-# def get_quiz_data(user_email, course_id):
-#     try:
-#         # Fetch quiz data based on user email and course ID
-#         quiz_data = assessments_collection.find_one(
-#             {"email": user_email, "course_id": course_id}, 
-#             {"_id": 0, "quiz": 1}
-#         )
-
-#         if not quiz_data:
-#             return jsonify({"error": "No quiz found for this course."}), 404
-
-#         return jsonify({"quiz": quiz_data["quiz"]}), 200
-
-#     except Exception as e:
-#         print("Error:", str(e))
-#         return jsonify({"error": str(e)}), 500
-
-
 @app.route("/api/get-quiz/<course_id>", methods=["GET"])
 def get_quiz(course_id):
     quiz = assessments_collection.find_one({"course_id": course_id})
