@@ -276,6 +276,26 @@ def generate_notes_route(user_email, notes_identifier):
     return jsonify(response), status_code
 
 # Get Notes
+# @app.route("/api/notes/<course_id>", methods=["GET"])
+# @token_required
+# def get_notes(user_email, course_id):
+#     try:
+#         print(f"Fetching notes for course_id: {course_id} and email: {user_email}")
+#         notes_entry = notes_collection.find_one({"course_id": course_id, "email": user_email})
+        
+#         if not notes_entry:
+#             print("No notes found in DB.")
+#             return jsonify({"error": "No notes found for this course."}), 404
+
+#         # print("Notes entry found:", notes_entry)
+#         notes_entry.pop("_id", None)
+
+#         return jsonify(notes_entry), 200
+#     except Exception as e:
+#         print("Error fetching notes:", str(e))
+#         return jsonify({"error": str(e)}), 500
+
+# Get Notes with YouTube Videos
 @app.route("/api/notes/<course_id>", methods=["GET"])
 @token_required
 def get_notes(user_email, course_id):
@@ -287,13 +307,19 @@ def get_notes(user_email, course_id):
             print("No notes found in DB.")
             return jsonify({"error": "No notes found for this course."}), 404
 
-        # print("Notes entry found:", notes_entry)
+        # Ensure each chapter includes a YouTube video link
+        notes = notes_entry.get("notes", {})
+        for chapter in notes.get("chapters", []):
+            chapter["video"] = chapter.get("video", "")
+
+        # Remove unnecessary fields before returning
         notes_entry.pop("_id", None)
 
-        return jsonify(notes_entry), 200
+        return jsonify({"notes": notes}), 200
     except Exception as e:
         print("Error fetching notes:", str(e))
         return jsonify({"error": str(e)}), 500
+
 
 # Generate quiz based on course ID
 @app.route("/api/generate-quiz/<course_id>", methods=["POST"])

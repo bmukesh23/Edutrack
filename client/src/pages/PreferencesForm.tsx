@@ -45,13 +45,23 @@ const PreferencesForm = () => {
           <h2 className="text-2xl font-semibold mb-6 text-center">Set Up Your Learning Preferences</h2>
 
           <label className="block font-medium mb-2">Enter Subjects:</label>
-          <input
-            type="text"
+          <select
             className="w-full bg-gray-800 border border-gray-700 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="E.g., JavaScript, Python"
             value={subjects}
             onChange={(e) => setSubjects(e.target.value)}
-          />
+          >
+            <option value="">Select</option>
+            <option value="Python">Python</option>
+            <option value="SQL">SQL</option>
+            <option value="JavaScript">JavaScript</option>
+            <option value="TypeScript">TypeScript</option>
+            <option value="Java">Java</option>
+            <option value="C++">C++</option>  
+            <option value="C#">C#</option>
+            <option value="Go">Go</option>
+            <option value="Ruby">Ruby</option>
+            <option value="PHP">PHP</option> 
+          </select>
 
           <label className="block font-medium mt-4 mb-2">Select Skill Level:</label>
           <select

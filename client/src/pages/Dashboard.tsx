@@ -93,7 +93,7 @@ const Dashboard = () => {
                             <p>Loading courses...</p>
                         ) : (
                             <div className="grid grid-cols-3 gap-4">
-                                {courses.slice(0,3).map((course, index) => (
+                                {courses.slice(0, 3).map((course, index) => (
                                     <div key={index} className="bg-gray-800 rounded-lg shadow-sm overflow-hidden">
                                         <div className="w-full h-32 bg-gradient-to-r from-blue-400 to-blue-600" />
                                         <div className="p-4">
@@ -132,21 +132,27 @@ const Dashboard = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {courses.map((course, index) => (
-                                            <tr key={index} className="border-t border-gray-700">
-                                                <td className="p-4">
-                                                    <div className="flex items-center">
-                                                        <span className='line-clamp-1'>{course.course_title}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="text-center">{course.totalLessons}</td>
-                                                <td className="p-4 text-center">
-                                                    <span className="px-2 py-1 rounded text-sm bg-yellow-800 text-yellow-200">Ongoing</span>
-                                                </td>
-                                                <td className="p-4 text-center">{course.difficulty}</td>
-                                                <td className="p-4 text-center">{course.category}</td>
-                                            </tr>
-                                        ))}
+                                        {courses.map((course, index) => {
+                                            const isCompleted = localStorage.getItem(`course-${course._id}-completed`) === "true";
+                                            return (
+                                                <tr key={index} className="border-t border-gray-700">
+                                                    <td className="p-4">
+                                                        <div className="flex items-center">
+                                                            <span className='line-clamp-1'>{course.course_title}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="text-center">{course.totalLessons}</td>
+                                                    <td className="p-4 text-center">
+                                                        <span className={`px-2 py-1 rounded text-sm 
+                                                    ${isCompleted ? "bg-green-800 text-green-200" : "bg-yellow-800 text-yellow-200"}`}>
+                                                            {isCompleted ? "Completed" : "Ongoing"}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-4 text-center">{course.difficulty}</td>
+                                                    <td className="p-4 text-center">{course.category}</td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>

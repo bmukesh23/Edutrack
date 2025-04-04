@@ -10,10 +10,13 @@ from threading import Thread
 from flask import jsonify
 import pickle
 import numpy as np
+import requests
 
 load_dotenv()
 
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
+YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
 
 mongo_uri = os.getenv("MONGO_URI")
 client = MongoClient(mongo_uri)
@@ -46,6 +49,23 @@ except Exception as e:
     print(f"Error loading model: {e}")
     svm_model = None
 
+def search_youtube_video(query):
+    params = {
+        "part": "snippet",
+        "q": query,
+        "key": YOUTUBE_API_KEY,
+        "maxResults": 1,
+        "type": "video"
+    }
+    response = requests.get(YOUTUBE_SEARCH_URL, params=params)
+    data = response.json()
+    
+    if "items" in data and data["items"]:
+        video_id = data["items"][0]["id"]["videoId"]
+        return f"https://www.youtube.com/watch?v={video_id}"
+    
+    return None  # No video found
+
 # Handler for generating assessment
 def async_generate_course(user_email):
     def background_task(user_email):
@@ -73,6 +93,9 @@ def extract_json(text):
         if json_text:
             json_text = re.sub(r",\s*}", "}", json_text)  # Remove trailing commas
             json_text = re.sub(r",\s*\]", "]", json_text)
+
+            print("Extracted JSON:", json_text[:500])
+
             return json.loads(json_text)
     except json.JSONDecodeError as e:
         print("JSON Decode Error:", e)
@@ -201,6 +224,10 @@ def generate_notes(user_email, course_id):
         parsed_json = extract_json(response.text)
         if not parsed_json or "notes" not in parsed_json:
             return {"error": "Invalid JSON format"}, 500
+        
+        for chapter in parsed_json["notes"]["chapters"]:
+            video_url = search_youtube_video(chapter["chapter_title"])  
+            chapter["video"] = video_url if video_url else ""
 
         # Save structured notes
         notes_data = {
@@ -216,6 +243,7 @@ def generate_notes(user_email, course_id):
     except Exception as e:
         print("Error:", str(e))
         return {"error": str(e)}, 500
+
 
 # Generate quizzes based on course ID
 def generate_quiz_from_course(user_email, course_id):
