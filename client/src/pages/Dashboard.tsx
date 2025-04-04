@@ -6,6 +6,7 @@ import useCourse from '@/hook/useCourse';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
+import { useMemo } from 'react';
 
 const generateRandomPercentage = () => Math.floor(Math.random() * 100) + 1;
 
@@ -20,16 +21,33 @@ const categoryColors = [
 ];
 
 const Dashboard = () => {
-    const metricsData = [
-        { label: 'Ongoing', value: 4, color: '#3B82F6' },
-        { label: 'Complete', value: 0, color: '#22C55E' },
-        { label: 'Certificate', value: 0, color: '#F97316' },
-        { label: 'Hour Spent', value: 5, color: '#8B5CF6' },
-    ];
+    // const metricsData = [
+    //     { label: 'Ongoing', value: 4, color: '#3B82F6' },
+    //     { label: 'Complete', value: 0, color: '#22C55E' },
+    //     { label: 'Certificate', value: 0, color: '#F97316' },
+    //     { label: 'Hour Spent', value: 5, color: '#8B5CF6' },
+    // ];
 
     const { userDetails, loading } = useUserDetails();
     const { courses } = useCourse();
     const navigate = useNavigate();
+
+    const metricsData = useMemo(() => {
+        const totalCourses = courses.length;
+        const completedCourses = courses.filter(course =>
+            localStorage.getItem(`course-${course._id}-completed`) === "true"
+        ).length;
+
+        const certificateCourses = 0; // Assuming certificates are granted on completion
+        const totalHoursSpent = totalCourses * 1.5; // Example logic, update with real tracking if available
+
+        return [
+            { label: 'Ongoing', value: totalCourses - completedCourses, color: '#3B82F6' },
+            { label: 'Complete', value: completedCourses, color: '#22C55E' },
+            { label: 'Certificate', value: certificateCourses, color: '#F97316' },
+            { label: 'Hour Spent', value: totalHoursSpent, color: '#8B5CF6' },
+        ];
+    }, [courses]);
 
     // Extract unique categories and assign random percentages and colors
     const uniqueCategories = [...new Set(courses.map(course => course.category))];
@@ -66,7 +84,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* The rest of the dashboard content */}
-                <div className="grid grid-cols-4 gap-4 mb-8">
+                {/* <div className="grid grid-cols-4 gap-4 mb-8">
                     {metricsData.map((metric, index) => {
                         let value = metric.value;
                         if (metric.label === 'Ongoing') value = courses.length;
@@ -80,7 +98,19 @@ const Dashboard = () => {
                             </div>
                         );
                     })}
+                </div> */}
+
+                <div className="grid grid-cols-4 gap-4 mb-8">
+                    {metricsData.map((metric, index) => (
+                        <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-sm">
+                            <div className="text-3xl font-bold mb-1" style={{ color: metric.color }}>
+                                {metric.value}
+                            </div>
+                            <div className="text-gray-400 text-sm">{metric.label}</div>
+                        </div>
+                    ))}
                 </div>
+
 
                 <div className="grid grid-cols-3 gap-8">
                     <div className="col-span-2">

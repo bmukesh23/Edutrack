@@ -8,6 +8,7 @@ from assessment import generate_assessment, generate_course, async_generate_cour
 from datetime import datetime, timedelta
 from functools import wraps
 from bson import ObjectId
+import google.generativeai as genai
 
 load_dotenv()
 
@@ -15,6 +16,19 @@ app = Flask(__name__)
 CORS(app)
 
 SECRET_KEY = os.getenv("SECRET_KEY")
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+generation_config = {
+    "temperature": 1,
+    "top_p": 0.95,
+    "top_k": 40,
+    "max_output_tokens": 8192,
+    "response_mime_type": "text/plain",
+}
+
+model = genai.GenerativeModel(
+    model_name="gemini-2.0-flash",
+    generation_config=generation_config,
+)
 
 # MongoDB Setup
 try:
@@ -275,26 +289,6 @@ def generate_notes_route(user_email, notes_identifier):
     response, status_code = generate_notes(user_email, notes_identifier)
     return jsonify(response), status_code
 
-# Get Notes
-# @app.route("/api/notes/<course_id>", methods=["GET"])
-# @token_required
-# def get_notes(user_email, course_id):
-#     try:
-#         print(f"Fetching notes for course_id: {course_id} and email: {user_email}")
-#         notes_entry = notes_collection.find_one({"course_id": course_id, "email": user_email})
-        
-#         if not notes_entry:
-#             print("No notes found in DB.")
-#             return jsonify({"error": "No notes found for this course."}), 404
-
-#         # print("Notes entry found:", notes_entry)
-#         notes_entry.pop("_id", None)
-
-#         return jsonify(notes_entry), 200
-#     except Exception as e:
-#         print("Error fetching notes:", str(e))
-#         return jsonify({"error": str(e)}), 500
-
 # Get Notes with YouTube Videos
 @app.route("/api/notes/<course_id>", methods=["GET"])
 @token_required
@@ -335,6 +329,29 @@ def get_quiz(course_id):
     if not quiz:
         return jsonify({"error": "Quiz not found"}), 404
     return jsonify({"quiz": quiz["quiz"]}), 200
+
+
+@app.route("/api/ask-ai", methods=["POST"])
+def ask_ai():
+    data = request.get_json()
+    question = data.get("question")
+
+    if not question:
+        return jsonify({"error": "Question is required"}), 400
+
+    try:
+        prompt = f"You are a helpful AI assistant for an educational platform. Answer this course-related question in 40 words:\n\n{question}"
+        print(f"[ASK-AI] Prompt: {prompt}")
+        
+        response = model.generate_content(prompt)
+        print(f"[ASK-AI] Raw Response: {response.text}")
+        
+        answer = response.text.strip()
+
+        return jsonify({"answer": answer})
+    except Exception as e:
+        print("[ASK-AI] ERROR:", str(e))
+        return jsonify({"error": "AI failed to generate a response"}), 500
 
 
 if __name__ == "__main__":

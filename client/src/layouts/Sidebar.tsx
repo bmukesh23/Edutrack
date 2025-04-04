@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { BarChart2, Pencil, BookMarked, LogOut } from 'lucide-react';
+import { BarChart2, Pencil, BookMarked, LogOut, Sparkle } from 'lucide-react';
 import Logo from "/logo.svg";
 
 const Sidebar = () => {
@@ -46,6 +46,14 @@ const Sidebar = () => {
                                     className={({ isActive }) => isActive ? "flex items-center space-x-2 p-2 rounded bg-yellow-800" : "flex items-center space-x-2 p-2 rounded hover:bg-yellow-800"}>
                                     <BookMarked size={20} />
                                     <span>My Courses</span>
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink
+                                    to="/ask-ai"
+                                    className={({ isActive }) => isActive ? "flex items-center space-x-2 p-2 rounded bg-yellow-800" : "flex items-center space-x-2 p-2 rounded hover:bg-yellow-800"}>
+                                    <Sparkle size={20} />
+                                    <span>Ask AI</span>
                                 </NavLink>
                             </li>
                             <li>

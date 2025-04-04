@@ -44,7 +44,7 @@ const PreferencesForm = () => {
         <div className="max-w-lg p-6 bg-gray-900 shadow-lg rounded-xl text-white">
           <h2 className="text-2xl font-semibold mb-6 text-center">Set Up Your Learning Preferences</h2>
 
-          <label className="block font-medium mb-2">Enter Subjects:</label>
+          <label className="block font-medium mb-2">Enter Skill:</label>
           <select
             className="w-full bg-gray-800 border border-gray-700 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={subjects}

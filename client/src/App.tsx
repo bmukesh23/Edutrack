@@ -7,6 +7,7 @@ import Assessment from "./pages/Assessment";
 import CourseDetails from "./pages/CourseDetails";
 import Notes from "./pages/Notes";
 import Quiz from "./pages/Quiz";
+import AskAI from "./pages/AskAI";
 
 function App() {
 
@@ -18,6 +19,7 @@ function App() {
         <Route path="/preferences-form" element={<PreferencesForm />} />
         <Route path="/assessment" element={<Assessment />} />
         <Route path="/mycourses" element={<Courses />} />
+        <Route path="/ask-ai" element={<AskAI/>}/>
         <Route path="/mycourses/:courseId" element={<CourseDetails />} />
         <Route path="/mycourses/notes/:courseId" element={<Notes />} />
         <Route path="/mycourses/quiz/:courseId" element={<Quiz />} />
