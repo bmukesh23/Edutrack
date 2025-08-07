@@ -4,7 +4,6 @@ import Sidebar from "@/layouts/Sidebar";
 import { CourseDetailsTypes } from "@/utils/types";
 import axiosInstance from "@/utils/axiosInstance";
 import { Button } from "@/components/ui/button";
-import { AxiosError } from "axios";
 
 const CourseDetails = () => {
   const { courseId } = useParams();
@@ -28,6 +27,7 @@ const CourseDetails = () => {
 
         if (response.data) {
           setCourseDetails(response.data);
+          localStorage.setItem(`course-${courseId}-chapters`, response.data.totalLessons.toString());
           console.log("Course Details:", response.data);
         }
       } catch (error) {
@@ -43,28 +43,12 @@ const CourseDetails = () => {
   const handleGenerateNotes = async () => {
     setCreatingNotes(true);
     try {
-      await axiosInstance.post(`/api/generate-notes/${courseId}`);
-
-      const pollForNotes = async () => {
-        try {
-          const response = await axiosInstance.get(`/api/notes/${courseId}`);
-          if (response.status === 200 && response.data) {
-            navigate(`/mycourses/notes/${courseId}`);
-          } else {
-            setTimeout(pollForNotes, 5000);
-          }
-        } catch (error) {
-          const axiosError = error as AxiosError;
-          if (axiosError.response?.status === 404) {
-            setTimeout(pollForNotes, 5000);
-          } else {
-            console.error("Error fetching notes:", error);
-            setCreatingNotes(false);
-          }
-        }
+      const response = await axiosInstance.post(`/api/generate-notes/${courseId}`);
+      if (response.status === 202 && response.data) {
+        navigate(`/mycourses/notes/${courseId}`);
+      } else {
+        console.error("Failed to generate notes:", response.data);
       }
-
-      pollForNotes();
     } catch (error) {
       console.error("Error generating notes:", error);
     } finally {
@@ -75,28 +59,7 @@ const CourseDetails = () => {
   const handleGenerateQuiz = async () => {
     setCreatingQuiz(true);
     try {
-      await axiosInstance.post(`/api/generate-quiz/${courseId}`);
-
-      const pollForQuiz = async () => {
-        try {
-          const response = await axiosInstance.get(`/api/get-quiz/${courseId}`);
-          if (response.status === 200 && response.data) {
-            navigate(`/mycourses/quiz/${courseId}`);
-          } else {
-            setTimeout(pollForQuiz, 5000);
-          }
-        } catch (error) {
-          const axiosError = error as AxiosError;
-          if (axiosError.response?.status === 404) {
-            setTimeout(pollForQuiz, 5000);
-          } else {
-            console.error("Error fetching quiz:", error);
-            setCreatingQuiz(false);
-          }
-        }
-      }
-
-      pollForQuiz();
+      navigate(`/mycourses/quiz/${courseId}`);
     } catch (error) {
       console.error("Error generating notes:", error);
     } finally {
@@ -108,9 +71,9 @@ const CourseDetails = () => {
     navigate(`/mycourses/notes/${courseId}`);
   }
 
-  const handleQuiz = async () => {
-    navigate(`/mycourses/quiz/${courseId}`);
-  }
+  // const handleQuiz = async () => {
+  //   navigate(`/mycourses/quiz/${courseId}`);
+  // }
 
   return (
     <section className="flex min-h-screen bg-gray-900 text-white">
@@ -122,8 +85,8 @@ const CourseDetails = () => {
         ) : courseDetails ? (
           <>
             <div className="shadow-xl bg-gray-800 rounded-lg">
-              <h1 className="text-2xl font-bold bg-blue-600 rounded-t-xl p-4">{courseDetails.course_title}</h1>
-              <p className="text-gray-400 mt-2 p-4">{courseDetails.course_summary}</p>
+              <h1 className="text-2xl font-bold bg-blue-600 rounded-t-xl p-4">{courseDetails.courseTitle}</h1>
+              <p className="text-gray-400 mt-2 p-4">{courseDetails.courseSummary}</p>
               <p className="text-blue-500 px-4 pb-4">Total Chapters: {courseDetails.totalLessons}</p>
             </div>
 
@@ -162,12 +125,12 @@ const CourseDetails = () => {
                   {creatingQuiz ? "Generating..." : "Generate"}
                 </Button>
 
-                <Button
+                {/* <Button
                   onClick={handleQuiz}
                   className="bg-green-500 px-4 py-1 mt-2 rounded-md text-sm font-semibold hover:bg-green-700"
                 >
                   View
-                </Button>
+                </Button> */}
               </div>
 
               <div className="bg-gray-800 p-4 mt-2 rounded-lg">

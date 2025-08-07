@@ -16,15 +16,14 @@ const SignUp = () => {
         try {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
+            const idToken = await user.getIdToken();
 
             if (!user.email) {
                 throw new Error("Google authentication failed: No email provided.");
             }
 
             const userData = {
-                name: user.displayName,
-                email: user.email,
-                photoURL: user.photoURL,
+                idToken: idToken,
             };
 
             const response = await axiosInstance.post('/api/auth', userData);

@@ -1,13 +1,13 @@
 # 🎓 Edutrack
-An intelligent Learning Management System (LMS) that adapts to each user’s skill level and learning pace, ensuring a customized and effective learning experience.Built with React.ts and Gemini 2.0 Flash.
+An AI-based Learning Management System (LMS) that adapts to each user’s skill level and learning pace, ensuring a customized and effective learning experience. Built with React.ts, Spring Boot and Gemini Flash 2.5.
 
 ## 📦 Technologies
 
 - `React`
 - `Typescript`
 - `Tailwind CSS`
-- `PyMongo`
-- `Flask`
+- `Spring Boot`
+- `PostgreSQL`
 
 ## ✨ Features
 
@@ -28,8 +28,6 @@ An intelligent Learning Management System (LMS) that adapts to each user’s ski
 Before you begin, ensure you have the following installed on your machine:
 
 - [Node.js](https://nodejs.org/): Make sure to install Node.js, which includes npm (Node Package Manager).
-- [MongoDB](https://www.mongodb.com/try/download/community): Set up a MongoDB database and obtain the connection URL.
-- [Python](https://www.python.org/downloads/): Required for running the Flask backend. 
 
 ## Steps
 
@@ -49,12 +47,6 @@ Before you begin, ensure you have the following installed on your machine:
     npm install
     ```
 
-    ```bash
-    cd ../server
-    pip install -r requirements.txt
-    ```
-
-
 4. **Set Environment Variables:**
     1. Create a `.env` file in the root of the `client` folder of the project.
     2. Add the following environment variables and replace the values with your own:
@@ -70,29 +62,13 @@ Before you begin, ensure you have the following installed on your machine:
     VITE_BACKEND_URL=
     ```
 
-    1. Create a `.env` file in the root of the `server` folder of the project.
-    2. Add the following environment variables and replace the values with your own:
-
-    ```env
-    SECRET_KEY=
-    MONGO_URI=
-    GEMINI_API_KEY=
-    ```
-
 5. **Run the application:**
-    ```bash
-    cd server
-    python app.py
-    ```
-
     ```bash
     cd client
     npm run dev
     ```
 
 6. **Access the App:**
-- By default, the Flask server runs on [http://localhost:5000](http://localhost:5000)
-
 - By default, the frontend will be available at [http://localhost:5173](http://localhost:5173)
 
 - Once both servers are running:

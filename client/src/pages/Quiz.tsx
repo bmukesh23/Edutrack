@@ -22,9 +22,9 @@ const Quiz = () => {
         const fetchQuiz = async () => {
             try {
                 const response = await axiosInstance.get(`/api/get-quiz/${courseId}`);
-                if (response.data?.quiz?.questions) {
-                    setQuizData(response.data.quiz.questions);
-                    console.log("Quiz Data:", response.data.quiz.questions);
+                if (response.data?.questions) {
+                    setQuizData(response.data.questions);
+                    console.log("Quiz Data:", response.data.questions);
                 }
             } catch (error) {
                 console.error("Error fetching quiz data:", error);
@@ -44,7 +44,7 @@ const Quiz = () => {
         setSubmitting(true);
         let calculatedScore = 0;
         quizData.forEach((question, index) => {
-            if (selectedAnswers[index] === question.answer) {
+            if (selectedAnswers[index] === question.correctAnswer) {
                 calculatedScore++;
             }
         });
@@ -53,7 +53,7 @@ const Quiz = () => {
         setSubmitting(false);
     };
 
-    if (loading) return <p className="text-white">Loading quiz...</p>;
+    if (loading) return <p className="text-white">Generating quiz... This may a few seconds.</p>;
 
     if (!quizData.length) return <p className="text-white">No quiz available for this course.</p>;
 
@@ -65,7 +65,7 @@ const Quiz = () => {
 
                 {userDetails ? (
                     <div className="flex items-center space-x-3">
-                        <img src={userDetails?.photoURL} className='w-8 h-8 rounded-full' />
+                        <img src={userDetails?.photoUrl} alt="User Profile" className='w-8 h-8 rounded-full' />
                         <span className="font-medium pr-1">{userDetails.name}</span>
                     </div>
                 ) : (
@@ -87,10 +87,10 @@ const Quiz = () => {
                                     disabled={submitted}
                                     checked={selectedAnswers[index] === option}
                                     onChange={() => handleOptionSelect(index, option)}
-                                    className="accent-blue-500"
+                                    className="accent-blue-500 cursor-pointer"
                                 />
                                 <span
-                                    className={`${submitted && option === question.answer
+                                    className={`${submitted && option === question.correctAnswer
                                         ? "text-green-500"
                                         : submitted && selectedAnswers[index] === option
                                             ? "text-red-500"
@@ -103,8 +103,8 @@ const Quiz = () => {
                         ))}
                     </div>
 
-                    {submitted && selectedAnswers[index] !== question.answer && (
-                        <p className="text-red-500 text-sm mt-2">Correct Answer: {question.answer}</p>
+                    {submitted && selectedAnswers[index] !== question.correctAnswer && (
+                        <p className="text-red-500 text-sm mt-2">Correct Answer: {question.correctAnswer}</p>
                     )}
                 </div>
             ))}

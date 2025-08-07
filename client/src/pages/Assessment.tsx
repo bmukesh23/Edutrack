@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../utils/axiosInstance";
-import { UserDetails, Question } from "@/utils/types";
+import { Question } from "@/utils/types";
 import Navbar from "@/layouts/Navbar";
-import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
+import useUserDetails from "@/hook/useUserDetails";
 
 const Assessment = () => {
     const navigate = useNavigate();
-    const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
+    const { userDetails } = useUserDetails();
     const [questions, setQuestions] = useState<Question[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedOptions, setSelectedOptions] = useState<{ [key: number]: string }>({});
@@ -16,30 +16,11 @@ const Assessment = () => {
     const [error, setError] = useState("");
 
     useEffect(() => {
-        const fetchUserDetails = () => {
-            const token = localStorage.getItem("token");
-            if (token) {
-                try {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const decoded: any = jwtDecode(token);
-                    setUserDetails(decoded);
-                    if (decoded?.email) {
-                        fetchAssessment(decoded.email);
-                    }
-                } catch (error) {
-                    setError("Invalid token");
-                    console.error("Error decoding token:", error);
-                    setLoading(false);
-                }
-            } else {
-                setError("No authentication token found");
-                setLoading(false);
-            }
-        };
+        const fetchAssessment = async () => {
+            if (!userDetails?.email) return;
 
-        const fetchAssessment = async (email: string) => {
             try {
-                const response = await axiosInstance.post("/generate-assessment", { email });
+                const response = await axiosInstance.post("/generate-assessment", { email: userDetails.email });
                 if (response.status === 200 && response.data.questions) {
                     setQuestions(response.data.questions);
                     console.log("Questions:", response.data.questions);
@@ -54,8 +35,10 @@ const Assessment = () => {
             }
         };
 
-        fetchUserDetails();
-    }, []);
+        if (userDetails) {
+            fetchAssessment();
+        }
+    }, [userDetails]);
 
     const handleOptionSelect = (option: string) => {
         setSelectedOptions((prev) => ({ ...prev, [currentIndex]: option }));
@@ -63,32 +46,32 @@ const Assessment = () => {
 
     const handleSubmit = async () => {
         if (!userDetails) return;
-        
+
         setSubmitting(true);  // Show loading state
-    
+
         const timestamp = new Date().toISOString();
         const score = questions.reduce((acc, q, idx) => (
             acc + (selectedOptions[idx] === q.answer ? 1 : 0)
         ), 0);
-    
+
         const assessmentData = {
             email: userDetails.email,
             name: userDetails.name,
             timestamp,
-            questions: questions.map((q, idx) => ({
-                question: q.question,
-                options: q.options,
-                selected_option: selectedOptions[idx] || "",
-                correct_answer: q.answer
-            })),
+            // questions: questions.map((q, idx) => ({
+            //     question: q.question,
+            //     options: q.options,
+            //     selected_option: selectedOptions[idx] || "",
+            //     correct_answer: q.answer
+            // })),
             score,
-            total_questions: questions.length
+            totalQuestions: questions.length
         };
-    
+
         try {
-            const response = await axiosInstance.post("/api/save-assessment", assessmentData);
-    
-            if (response.status === 200) {
+            const response = await axiosInstance.post("/save-assessment", assessmentData);
+
+            if (response.status === 201) {
                 alert("Assessment submitted successfully! Course created.");
                 navigate("/dashboard");
             } else {
@@ -101,7 +84,7 @@ const Assessment = () => {
             setSubmitting(false);
         }
     };
-    
+
     const handleNext = () => {
         if (!selectedOptions[currentIndex]) return;
         if (currentIndex < questions.length - 1) {
@@ -127,7 +110,7 @@ const Assessment = () => {
 
     return (
         <section>
-            <Navbar/>
+            <Navbar />
             <div className="mt-8 flex flex-col justify-center items-center bg-gray-950">
                 <div className="w-full max-w-lg mb-4 flex space-x-2">
                     {questions.map((_, index) => (
@@ -147,8 +130,8 @@ const Assessment = () => {
                             <button
                                 key={index}
                                 className={`w-full p-3 rounded-md border transition-all ${selectedOptions[currentIndex] === option
-                                        ? "bg-blue-500 text-white border-blue-400 shadow-lg"
-                                        : "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700"}`}
+                                    ? "bg-blue-500 text-white border-blue-400 shadow-lg"
+                                    : "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700"}`}
                                 onClick={() => handleOptionSelect(option)}
                             >
                                 {option}
@@ -159,8 +142,8 @@ const Assessment = () => {
                     <div className="flex justify-between mt-6">
                         <button
                             className={`p-3 rounded-md font-semibold transition-all ${currentIndex > 0
-                                    ? "bg-yellow-500 hover:bg-yellow-600 text-white shadow-md"
-                                    : "bg-gray-700 text-gray-400 cursor-not-allowed"}`}
+                                ? "bg-yellow-500 hover:bg-yellow-600 text-white shadow-md"
+                                : "bg-gray-700 text-gray-400 cursor-not-allowed"}`}
                             onClick={handlePrevious}
                             disabled={currentIndex === 0}
                         >
@@ -169,8 +152,8 @@ const Assessment = () => {
 
                         <button
                             className={`p-3 rounded-md font-semibold transition-all ${selectedOptions[currentIndex]
-                                    ? "bg-green-500 hover:bg-green-600 text-white shadow-md"
-                                    : "bg-gray-700 text-gray-400 cursor-not-allowed"}`}
+                                ? "bg-green-500 hover:bg-green-600 text-white shadow-md"
+                                : "bg-gray-700 text-gray-400 cursor-not-allowed"}`}
                             onClick={handleNext}
                             disabled={!selectedOptions[currentIndex]}
                         >

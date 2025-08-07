@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import useUserDetails from "@/hook/useUserDetails";
 import useCourse from "@/hook/useCourse";
 import { useNavigate } from "react-router-dom";
+import { HiOutlineEmojiSad } from "react-icons/hi";
 
 const Courses = () => {
   const { userDetails, loading } = useUserDetails();
@@ -26,9 +27,10 @@ const Courses = () => {
             />
           </div>
 
-          {userDetails?.photoURL ? (
+          {userDetails ? (
             <div className="flex items-center space-x-3">
-              <img src={userDetails?.photoURL} alt="User Profile" className='w-8 h-8 rounded-full' />
+              <img src={userDetails?.photoUrl} alt="User Profile" className='w-8 h-8 rounded-full' />
+              {/* <span className='rounded-full bg-gradient-to-r from-blue-400 to-green-600 w-8 h-8'/> */}
               <span className="font-medium pr-1">{userDetails.name}</span>
             </div>
           ) : (
@@ -43,25 +45,39 @@ const Courses = () => {
             </div>
 
             {loading ? (
-              <p>Loading courses...</p>
+              <div className="flex flex-col items-center justify-center bg-gray-800 rounded-lg py-12 h-[500px]">
+                <p>Loading courses...</p>
+              </div>
+            ) : courses.length === 0 ? (
+              <div className="flex flex-col items-center justify-center bg-gray-800 rounded-lg py-12 h-[500px]">
+                <HiOutlineEmojiSad className="text-7xl text-blue-400 mb-2" />
+                <p className="text-lg font-semibold text-gray-300">No courses found</p>
+                <p className="text-sm text-gray-400 mt-1">Take the initial assessment to create your personalized course.</p>
+                <Button
+                  className="mt-4 bg-blue-600"
+                  onClick={() => navigate("/preferences-form")}
+                >
+                  Take Assessment
+                </Button>
+              </div>
             ) : (
               <div className="grid grid-cols-4 gap-4">
                 {courses.map((course, index) => (
                   <div key={index} className="bg-gray-800 rounded-lg shadow-sm overflow-hidden">
                     <div className="w-full h-32 bg-gradient-to-r from-blue-400 to-blue-600" />
                     <div className="p-4">
-                      <h3 className="font-medium mb-2 line-clamp-2">{course.course_title}</h3>
+                      <h3 className="font-medium mb-2 line-clamp-2">{course.courseTitle}</h3>
                       <div className="text-sm text-gray-400">
-                        {course.totalLessons || 0} Lessons •  22 Hours
+                        {course.totalLessons || 0} Lessons • 22 Hours
                       </div>
-                      <p className="text-gray-600 text-xs line-clamp-2">{course.course_summary}</p>
+                      <p className="text-gray-600 text-xs line-clamp-2">{course.courseSummary}</p>
                       <p className="text-xs text-purple-400 mt-2">
                         Created on {course.timestamp ? format(new Date(course.timestamp), "PPP") : "Unknown Date"}
                       </p>
 
                       <Button
                         className="mt-4 w-full bg-blue-600"
-                        onClick={() => navigate(`/mycourses/${course._id}`)}
+                        onClick={() => navigate(`/mycourses/${course.id}`)}
                       >
                         View
                       </Button>
@@ -70,7 +86,6 @@ const Courses = () => {
                 ))}
               </div>
             )}
-
           </div>
         </div>
       </div>

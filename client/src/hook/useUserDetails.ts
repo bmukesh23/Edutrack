@@ -14,7 +14,7 @@ const useUserDetails = () => {
           console.error("No token found");
           return;
         }
-        const response = await axiosInstance.get("/api/users/me");
+        const response = await axiosInstance.get("/api/me");
         setUserDetails(response.data);
         console.log(response.data);
       } catch (error) {

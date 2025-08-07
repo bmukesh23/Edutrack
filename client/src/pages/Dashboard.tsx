@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useMemo } from 'react';
+import { FaGraduationCap } from "react-icons/fa";
 
 const generateRandomPercentage = () => Math.floor(Math.random() * 100) + 1;
 
@@ -21,13 +22,6 @@ const categoryColors = [
 ];
 
 const Dashboard = () => {
-    // const metricsData = [
-    //     { label: 'Ongoing', value: 4, color: '#3B82F6' },
-    //     { label: 'Complete', value: 0, color: '#22C55E' },
-    //     { label: 'Certificate', value: 0, color: '#F97316' },
-    //     { label: 'Hour Spent', value: 5, color: '#8B5CF6' },
-    // ];
-
     const { userDetails, loading } = useUserDetails();
     const { courses } = useCourse();
     const navigate = useNavigate();
@@ -35,7 +29,7 @@ const Dashboard = () => {
     const metricsData = useMemo(() => {
         const totalCourses = courses.length;
         const completedCourses = courses.filter(course =>
-            localStorage.getItem(`course-${course._id}-completed`) === "true"
+            localStorage.getItem(`course-${course.id}-completed`) === "true"
         ).length;
 
         const certificateCourses = 0; // Assuming certificates are granted on completion
@@ -74,7 +68,8 @@ const Dashboard = () => {
 
                     {userDetails ? (
                         <div className="flex items-center space-x-3">
-                            <img src={userDetails?.photoURL} className='w-8 h-8 rounded-full' />
+                            {/* <span className='rounded-full bg-gradient-to-r from-blue-400 to-green-600 w-8 h-8'/> */}
+                            <img src={userDetails?.photoUrl} alt="User Profile" className='w-8 h-8 rounded-full' />
                             <span className="font-medium pr-1">{userDetails.name}</span>
                         </div>
                     ) : (
@@ -82,23 +77,6 @@ const Dashboard = () => {
                     )}
 
                 </div>
-
-                {/* The rest of the dashboard content */}
-                {/* <div className="grid grid-cols-4 gap-4 mb-8">
-                    {metricsData.map((metric, index) => {
-                        let value = metric.value;
-                        if (metric.label === 'Ongoing') value = courses.length;
-
-                        return (
-                            <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-sm">
-                                <div className="text-3xl font-bold mb-1" style={{ color: metric.color }}>
-                                    {value}
-                                </div>
-                                <div className="text-gray-400 text-sm">{metric.label}</div>
-                            </div>
-                        );
-                    })}
-                </div> */}
 
                 <div className="grid grid-cols-4 gap-4 mb-8">
                     {metricsData.map((metric, index) => (
@@ -120,25 +98,43 @@ const Dashboard = () => {
                         </div>
 
                         {loading ? (
-                            <p>Loading courses...</p>
+                            <div className="h-64 flex items-center justify-center bg-gray-800 rounded-lg shadow-inner">
+                                <p className="text-gray-300 text-lg">Loading courses...</p>
+                            </div>
+                        ) : courses.length === 0 ? (
+                            <div className="h-64 flex flex-col items-center justify-center bg-gray-800 rounded-lg shadow-inner">
+                                <h2 className="text-xl font-semibold mb-2 text-white">No courses found</h2>
+                                <p className="text-gray-400 mb-4">
+                                    Take an initial assessment to create your personalized course.
+                                </p>
+                                <Button
+                                    className="bg-blue-600 hover:bg-blue-700"
+                                    onClick={() => navigate("/preferences-form")}
+                                >
+                                    Take Assessment
+                                </Button>
+                            </div>
                         ) : (
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                                 {courses.slice(0, 3).map((course, index) => (
                                     <div key={index} className="bg-gray-800 rounded-lg shadow-sm overflow-hidden">
                                         <div className="w-full h-32 bg-gradient-to-r from-blue-400 to-blue-600" />
                                         <div className="p-4">
-                                            <h3 className="font-medium mb-2 line-clamp-2">{course.course_title}</h3>
+                                            <h3 className="font-medium mb-2 line-clamp-2 text-white">{course.courseTitle}</h3>
                                             <div className="text-sm text-gray-400">
-                                                {course.totalLessons || 0} Lessons •  22 Hours
+                                                {course.totalLessons || 0} Lessons • 22 Hours
                                             </div>
-                                            <p className="text-gray-600 text-xs line-clamp-2">{course.course_summary}</p>
+                                            <p className="text-gray-300 text-xs line-clamp-2">{course.courseSummary}</p>
                                             <p className="text-xs text-purple-400 mt-2">
-                                                Created on {course.timestamp ? format(new Date(course.timestamp), "PPP") : "Unknown Date"}
+                                                Created on{" "}
+                                                {course.timestamp
+                                                    ? format(new Date(course.timestamp), "PPP")
+                                                    : "Unknown Date"}
                                             </p>
 
                                             <Button
                                                 className="mt-4 w-full bg-blue-600"
-                                                onClick={() => navigate(`/mycourses/${course._id}`)}
+                                                onClick={() => navigate(`/mycourses/${course.id}`)}
                                             >
                                                 View
                                             </Button>
@@ -163,12 +159,12 @@ const Dashboard = () => {
                                     </thead>
                                     <tbody>
                                         {courses.map((course, index) => {
-                                            const isCompleted = localStorage.getItem(`course-${course._id}-completed`) === "true";
+                                            const isCompleted = localStorage.getItem(`course-${course.id}-completed`) === "true";
                                             return (
                                                 <tr key={index} className="border-t border-gray-700">
                                                     <td className="p-4">
                                                         <div className="flex items-center">
-                                                            <span className='line-clamp-1'>{course.course_title}</span>
+                                                            <span className='line-clamp-1'>{course.courseTitle}</span>
                                                         </div>
                                                     </td>
                                                     <td className="text-center">{course.totalLessons}</td>
@@ -190,34 +186,49 @@ const Dashboard = () => {
                     </div>
 
                     <div className="bg-gray-800 p-4 rounded-lg shadow-sm">
-                        <h2 className="text-lg font-semibold mb-4">Course Distribution</h2>
-                        <PieChart width={300} height={300}>
-                            <Pie
-                                data={courseDistribution}
-                                dataKey="value"
-                                outerRadius={100}
-                                fill="#8884d8"
-                                label
-                                isAnimationActive={true}
-                                animationDuration={500}
-                            >
-                                {courseDistribution.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.color} />
-                                ))}
-                            </Pie>
-                        </PieChart>
-                        <div className="mt-4">
-                            {courseDistribution.map((item, index) => (
-                                <div key={index} className="flex justify-between items-center mb-2">
-                                    <div className="flex items-center">
-                                        <div className="w-3 h-3 mr-2" style={{ backgroundColor: item.color }} />
-                                        <span>{item.name}</span>
-                                    </div>
-                                    <span>{item.value}%</span>
+                        <h2 className="text-lg font-semibold mb-4 text-white">Course Distribution</h2>
+
+                        {courseDistribution.length === 0 ? (
+                            <div className="h-64 flex flex-col items-center justify-center text-gray-400">
+                                <FaGraduationCap className="text-4xl text-blue-400 mb-2" />
+                                <p className="text-lg mb-1">No courses found</p>
+                                <p className="text-sm text-center">
+                                    Take an initial assessment to create your personalized courses.
+                                </p>
+                            </div>
+                        ) : (
+                            <>
+                                <PieChart width={300} height={300}>
+                                    <Pie
+                                        data={courseDistribution}
+                                        dataKey="value"
+                                        outerRadius={100}
+                                        fill="#8884d8"
+                                        label
+                                        isAnimationActive={true}
+                                        animationDuration={500}
+                                    >
+                                        {courseDistribution.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                </PieChart>
+
+                                <div className="mt-4 text-white">
+                                    {courseDistribution.map((item, index) => (
+                                        <div key={index} className="flex justify-between items-center mb-2">
+                                            <div className="flex items-center">
+                                                <div className="w-3 h-3 mr-2" style={{ backgroundColor: item.color }} />
+                                                <span>{item.name}</span>
+                                            </div>
+                                            <span>{item.value}%</span>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
+                            </>
+                        )}
                     </div>
+
 
                 </div>
             </div>

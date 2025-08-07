@@ -1,9 +1,3 @@
-export interface UserDetails {
-    email: string;
-    name: string;
-    photoURL: string;
-}
-
 export interface UserPrefDetails {
     email: string;
     preferences: {
@@ -14,7 +8,8 @@ export interface UserPrefDetails {
 
 export interface DashboardUserDetails {
     name: string;
-    photoURL: string;
+    email: string;
+    photoUrl: string;
 }
 
 export interface Question {
@@ -24,9 +19,9 @@ export interface Question {
 }
 
 export interface Course {
-    _id: string;
-    course_title: string;
-    course_summary: string;
+    id: string;
+    courseTitle: string;
+    courseSummary: string;
     timestamp: string;
     totalLessons: number;
     category: string;
@@ -39,8 +34,8 @@ export interface Chapter {
 }
 
 export interface CourseDetailsTypes {
-    course_title: string;
-    course_summary: string;
+    courseTitle: string;
+    courseSummary: string;
     chapters: Chapter[];
     totalLessons: number;
 }
@@ -48,5 +43,5 @@ export interface CourseDetailsTypes {
 export type QuizQuestion = {
     question: string;
     options: string[];
-    answer: string;
+    correctAnswer: string;
 };
