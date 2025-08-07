@@ -8,6 +8,7 @@ An AI-based Learning Management System (LMS) that adapts to each user’s skill 
 - `Tailwind CSS`
 - `Spring Boot`
 - `PostgreSQL`
+- `Docker`
 
 ## ✨ Features
 
