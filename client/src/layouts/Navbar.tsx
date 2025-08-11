@@ -5,7 +5,7 @@ const Navbar = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="flex items-center justify-between py-3 md:px-6 md:py-4">
+        <div className="flex items-center justify-between p-3 md:px-6 md:py-4">
             <div
                 className="flex items-center gap-1.5"
                 onClick={() => navigate("/dashboard")}
