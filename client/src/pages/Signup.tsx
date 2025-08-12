@@ -30,7 +30,7 @@ const SignUp = () => {
 
             if (response.data.token) {
                 localStorage.setItem("token", response.data.token);
-                console.log("signed-in successful. Token stored.");
+                // console.log("signed-in successful. Token stored.");
                 navigate("/dashboard");
             } else {
                 console.error("signed-in response did not contain a token.");

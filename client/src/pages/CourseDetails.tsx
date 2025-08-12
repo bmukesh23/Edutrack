@@ -27,7 +27,7 @@ const CourseDetails = () => {
         if (response.data) {
           setCourseDetails(response.data);
           localStorage.setItem(`course-${courseId}-chapters`, response.data.totalLessons.toString());
-          console.log("Course Details:", response.data);
+          // console.log("Course Details:", response.data);
         }
       } catch (error) {
         console.error("Error fetching course details:", error);
